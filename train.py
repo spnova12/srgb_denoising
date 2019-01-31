@@ -36,9 +36,9 @@ class TrainModule(object):
 
         # training data set
         self.train_paired_folder_dirs = {('/home/lab/works/datasets/ssd2/NTIRE_challenge_DB/sRGB/train/real_splited_non_overlaped/Noisy',
-                                     '/home/lab/works/datasets/ssd2/NTIRE_challenge_DB/sRGB/train/real_splited_non_overlaped/GroundTruth'): 81,
+                                     '/home/lab/works/datasets/ssd2/NTIRE_challenge_DB/sRGB/train/real_splited_non_overlaped/GroundTruth'): 2,
                                     ('/home/lab/works/datasets/ssd2/NTIRE_challenge_DB/sRGB/train/real_splited_non_overlaped/GroundTruth',
-                                     '/home/lab/works/datasets/ssd2/NTIRE_challenge_DB/sRGB/train/real_splited_non_overlaped/GroundTruth'): 19,
+                                     '/home/lab/works/datasets/ssd2/NTIRE_challenge_DB/sRGB/train/real_splited_non_overlaped/GroundTruth'): 1,
                                     }
 
         # test data set

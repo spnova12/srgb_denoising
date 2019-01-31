@@ -75,7 +75,7 @@ def uniformed_img_dirs_by_ratio(paired_to_ratio):
     # values 들을 하나의 list 로 묶어준다. 그리고 shuffle 한번 먹여주었다.
     img_dirs = list(paired_to_paired_imgs.values())
     img_dirs = sum(img_dirs, [])
-    # random.shuffle(img_dirs)
+    random.shuffle(img_dirs)
 
     print('# 다 합쳐진 최종 데이터 셋 사이즈 :', len(img_dirs))
 
