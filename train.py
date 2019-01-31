@@ -30,13 +30,15 @@ class TrainModule(object):
         os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"
 
         # 사용할 gpu 번호.
-        os.environ["CUDA_VISIBLE_DEVICES"] = '0'
+        self.cuda_num = '0'
+        print('===> cuda_num :', self.cuda_num)
+        os.environ["CUDA_VISIBLE_DEVICES"] = self.cuda_num
 
         # training data set
         self.train_paired_folder_dirs = {('/home/lab/works/datasets/ssd2/NTIRE_challenge_DB/sRGB/train/real_splited_non_overlaped/Noisy',
-                                     '/home/lab/works/datasets/ssd2/NTIRE_challenge_DB/sRGB/train/real_splited_non_overlaped/GroundTruth'): 2,
+                                     '/home/lab/works/datasets/ssd2/NTIRE_challenge_DB/sRGB/train/real_splited_non_overlaped/GroundTruth'): 81,
                                     ('/home/lab/works/datasets/ssd2/NTIRE_challenge_DB/sRGB/train/real_splited_non_overlaped/GroundTruth',
-                                     '/home/lab/works/datasets/ssd2/NTIRE_challenge_DB/sRGB/train/real_splited_non_overlaped/GroundTruth'): 1,
+                                     '/home/lab/works/datasets/ssd2/NTIRE_challenge_DB/sRGB/train/real_splited_non_overlaped/GroundTruth'): 19,
                                     }
 
         # test data set
@@ -44,7 +46,8 @@ class TrainModule(object):
         test_target_folder_dir = '/home/lab/works/datasets/ssd2/NTIRE_challenge_DB/sRGB/validation/GroundTruth'
 
         # 실험 이름.
-        exp_name = 'exp001'
+        self.exp_name = 'exp001'
+        print('===> exp name :', self.exp_name)
 
         # 총 몇 epoch 돌릴것인가.
         self.total_epoch = 20
@@ -65,14 +68,14 @@ class TrainModule(object):
         # ><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><
 
         # sample image 가 저장될 경로.
-        self.test_output_folder_dir = make_dirs(f'exp/{exp_name}/samples')
+        self.test_output_folder_dir = make_dirs(f'exp/{self.exp_name}/samples')
 
         # checkpoint 저장할 경로.
-        self.load_checkpoint_dir = make_dirs(f'exp/{exp_name}') + '/' + 'checkpoint.pkl'
-        self.saved_checkpoint_dir = make_dirs(f'exp/{exp_name}') + '/' + 'checkpoint.pkl'
+        self.load_checkpoint_dir = make_dirs(f'exp/{self.exp_name}') + '/' + 'checkpoint.pkl'
+        self.saved_checkpoint_dir = make_dirs(f'exp/{self.exp_name}') + '/' + 'checkpoint.pkl'
 
         # log csv 파일이 저장될 경로
-        self.log_dir = make_dirs(f'exp/{exp_name}')
+        self.log_dir = make_dirs(f'exp/{self.exp_name}')
 
         self.start_epoch = 1
         self.iter_count = 0
@@ -109,14 +112,14 @@ class TrainModule(object):
         self.test_input_img_dirs = [join(test_input_folder_dir, x) for x in sorted(listdir(test_input_folder_dir))]
         self.test_target_img_dirs = [join(test_target_folder_dir, x) for x in sorted(listdir(test_target_folder_dir))]
 
-        self.logger = LogCSV(log_dir=self.log_dir + f"/{exp_name}_log.csv")
+        self.logger = LogCSV(log_dir=self.log_dir + f"/{self.exp_name}_log.csv")
 
         # logger 의 header 를 입력해준다.
         self.logger.make_head(header=['epoch', 'iter_count', 'best_iter', 'average'] + sorted(listdir(test_input_folder_dir)))
 
         # ><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><
 
-        print('===> first eval validation set')
+        print('===> first eval validation set (Depending on the size of the validation set, it may take some time.)')
         # 처음 validation 을 구해본다.
 
         # target 과 noisy 와의 psnr 들.
@@ -206,7 +209,6 @@ class TrainModule(object):
             self.adjust_learning_rate(current_epoch)
 
             for i, batch in enumerate(self.train_data_loader, 1):
-                print(f'><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><')
                 self.net.train()
                 input_img, target_img = batch[0].to(self.device), batch[1].to(self.device)
                 output_img = self.net(input_img)
@@ -217,7 +219,10 @@ class TrainModule(object):
                 self.optimizer.step()
 
                 if i % 20 == 0:
-                    print(f"===> Epoch[{current_epoch}/{self.total_epoch}]({i}/{len(self.train_data_loader)}): Loss: {loss.item():.6f}")
+                    print(f"===> cuda{self.cuda_num}, {self.exp_name} [epoch, iter, loss] : "
+                          f"{current_epoch}/{self.total_epoch}, "
+                          f"{i}/{len(self.train_data_loader)}, "
+                          f"{loss.item():.6f}")
 
                 # ><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><
 
@@ -225,7 +230,7 @@ class TrainModule(object):
 
                 # eval
                 if self.iter_count % self.eval_period == 0:
-                    print('eval validation set')
+                    print('eval validation set -------------------------------------------------------------')
 
                     psnrs_list = []
                     for test_input_img_dir, test_target_img_dir in zip(self.test_input_img_dirs, self.test_target_img_dirs):
