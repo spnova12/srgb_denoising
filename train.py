@@ -28,6 +28,8 @@ cudnn.benchmark = True
 class TrainModule(object):
     def __init__(self):
         os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"
+
+        # 사용할 gpu 번호.
         os.environ["CUDA_VISIBLE_DEVICES"] = '0'
 
         # training data set
@@ -44,13 +46,15 @@ class TrainModule(object):
         # 실험 이름.
         exp_name = 'exp001'
 
-        self.total_epoch = 10
+        # 총 몇 epoch 돌릴것인가.
+        self.total_epoch = 20
 
-        self.lr_decay_period = 8
+        self.lr_decay_period = None
+
         self.init_learning_rate = 0.0001
 
         # eval 할 iteration 주기.
-        self.eval_period = 40
+        self.eval_period = 60
 
         self.batch_size = 16
 
@@ -114,9 +118,11 @@ class TrainModule(object):
 
         print('===> first eval validation set')
         # 처음 validation 을 구해본다.
-        # target 과 noisy 와의 psnr, 불러온 checkpoint 혹은 초기 모델로 eval 한 결과의 target 과의 psnr.
 
+        # target 과 noisy 와의 psnr 들.
         input_psnrs_list = []
+
+        # 불러온 checkpoint 혹은 초기 모델로 eval 한 결과의 target 과의 psnr 들.
         output_psnrs_list = []
 
         for test_input_img_dir, test_target_img_dir in zip(self.test_input_img_dirs, self.test_target_img_dirs):
@@ -131,7 +137,10 @@ class TrainModule(object):
             input_psnrs_list.append(input_psnr)
             output_psnrs_list.append(ouput_psnr)
 
+        # target 과 noisy 와의 psnr 로그(csv 파일)에 기록.
         self.logger(['', '', ''] + [np.mean(input_psnrs_list)] + input_psnrs_list)
+
+        # 불러온 checkpoint 혹은 초기 모델로 eval 한 결과의 target 과의 psnr 들 로그(csv 파일)에 기록.
         self.logger([0, self.iter_count, ''] + [np.mean(output_psnrs_list)] + output_psnrs_list)
 
         # ><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><
@@ -143,27 +152,22 @@ class TrainModule(object):
         self.train_data_loader = None
         self.init_training_dataset_loader()
 
-        self.train_set2 = None
-        self.train_data_loader2 = None
-        self.init_training_dataset_loader()
-
     def init_training_dataset_loader(self):
         self.train_set = UniformedPairedImageDataSet(self.train_paired_folder_dirs, self.img_loader,
-                                       Compose([
-                                           RandomCrop(self.random_crop_size),
-                                           ToTensor()
-                                       ])
-                                       )
+                                                     Compose([
+                                                         RandomCrop(self.random_crop_size),
+                                                         ToTensor()
+                                                     ])
+                                                     )
 
         self.train_data_loader = DataLoader(dataset=self.train_set,
                                             num_workers=4,
                                             batch_size=self.batch_size,
-                                            shuffle=False,
+                                            shuffle=True,
                                             drop_last=True,
                                             )
 
     def weight_loader(self):
-        # optionally resume from a checkpoint
         if os.path.isfile(self.load_checkpoint_dir):
             print("===> loading checkpoint '{}'".format(self.load_checkpoint_dir))
 
@@ -202,6 +206,7 @@ class TrainModule(object):
             self.adjust_learning_rate(current_epoch)
 
             for i, batch in enumerate(self.train_data_loader, 1):
+                print(f'><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><')
                 self.net.train()
                 input_img, target_img = batch[0].to(self.device), batch[1].to(self.device)
                 output_img = self.net(input_img)
@@ -226,6 +231,7 @@ class TrainModule(object):
                     for test_input_img_dir, test_target_img_dir in zip(self.test_input_img_dirs, self.test_target_img_dirs):
                         test_input_img = self.img_loader(test_input_img_dir)
                         test_target_img = self.img_loader(test_target_img_dir)
+
                         test_output_img = self.eval.recon(test_input_img)
 
                         ouput_psnr = psnr(test_target_img, test_output_img)
@@ -245,9 +251,12 @@ class TrainModule(object):
                         self.best_iter = self.iter_count
                         self.weight_saver(current_epoch, filename=self.saved_checkpoint_dir)
 
+                    print(f'current_psnr(iter:{self.iter_count}) : {psnrs_list_mean}\n'
+                          f'besr_psnr(iter:{self.best_iter}) : {self.best_psnr}')
+
                     self.logger([current_epoch, self.iter_count, self.best_iter, psnrs_list_mean] + psnrs_list)
 
-            # 여러개의 학습 데이터 셋을 섞으려면 data loader 을 다시 생성해야된다.
+            # 한 epoch 이 끝나면 data loader 을 다시 생성해서 좀 더 뼛 속까지 섞어준다.
             self.init_training_dataset_loader()
 
 
