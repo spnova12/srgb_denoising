@@ -38,16 +38,26 @@ class TrainModule(object):
         self.train_paired_folder_dirs = {
             ('/home/lab/works/datasets/ssd2/ntire/train/splited_none_overlaped/Noisy',
              '/home/lab/works/datasets/ssd2/ntire/train/splited_none_overlaped/GroundTruth'): 1,
+
             ('/home/lab/works/datasets/ssd2/ntire/train/splited_none_overlaped/SyntheticNoisy0',
+             '/home/lab/works/datasets/ssd2/ntire/train/splited_none_overlaped/GroundTruth'): 0,
+
+            ('/home/lab/works/datasets/ssd2/ntire/train/splited_none_overlaped/SyntheticNoisy1',
+             '/home/lab/works/datasets/ssd2/ntire/train/splited_none_overlaped/GroundTruth'): 0,
+
+            ('/home/lab/works/datasets/ssd2/ntire/train/splited_none_overlaped/SyntheticNoisy2',
              '/home/lab/works/datasets/ssd2/ntire/train/splited_none_overlaped/GroundTruth'): 0,
         }
 
-        # test data set
-        test_input_folder_dir = '/home/lab/works/datasets/ssd2/ntire/validation/Noisy'
-        test_target_folder_dir = '/home/lab/works/datasets/ssd2/ntire/validation/GroundTruth'
+        # test data set (Noisy, Target 순서대로)
+        test_folder_dir = [('/home/lab/works/datasets/ssd2/ntire/validation/Noisy',
+                           '/home/lab/works/datasets/ssd2/ntire/validation/GroundTruth'),
+                           ('/home/lab/works/datasets/ssd2/flickr/validation/GroundTruth',
+                            '/home/lab/works/datasets/ssd2/flickr/validation/GroundTruth')
+                           ]
 
         # 실험 이름.
-        self.exp_name = 'exp001'
+        self.exp_name = 'exp002_2'
         print('===> exp name :', self.exp_name)
 
         # 총 몇 epoch 돌릴것인가.
@@ -110,13 +120,19 @@ class TrainModule(object):
         # Make eval module based on net
         self.eval = EvalModule(self.net)
 
-        self.test_input_img_dirs = [join(test_input_folder_dir, x) for x in sorted(listdir(test_input_folder_dir))]
-        self.test_target_img_dirs = [join(test_target_folder_dir, x) for x in sorted(listdir(test_target_folder_dir))]
+        self.test_input_img_dirs = []
+        self.test_target_img_dirs = []
+
+        img_dir_list_for_logger = []
+        for test_input_folder_dir, test_target_folder_dir in test_folder_dir:
+            img_dir_list_for_logger += sorted(listdir(test_input_folder_dir))
+            self.test_input_img_dirs += [join(test_input_folder_dir, x) for x in sorted(listdir(test_input_folder_dir))]
+            self.test_target_img_dirs += [join(test_target_folder_dir, x) for x in sorted(listdir(test_target_folder_dir))]
 
         self.logger = LogCSV(log_dir=self.log_dir + f"/{self.exp_name}_log.csv")
 
         # logger 의 header 를 입력해준다.
-        self.logger.make_head(header=['epoch', 'iter_count', 'best_iter', 'average'] + sorted(listdir(test_input_folder_dir)))
+        self.logger.make_head(header=['epoch', 'iter_count', 'best_iter', 'average'] + img_dir_list_for_logger)
 
         # ><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><
 
