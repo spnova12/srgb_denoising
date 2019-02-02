@@ -8,10 +8,11 @@ from random import *
 import shutil
 
 
-train_dirs = '/home/lab/works/datasets/ssd2/NTIRE_challenge_DB/sRGB/train/real_splited_none_overlaped'
+train_dirs =      '/home/lab/works/datasets/ssd2/flickr/train/downsampled'
 
-validation_dirs = '/home/lab/works/datasets/ssd2/NTIRE_challenge_DB/sRGB/validation'
+validation_dirs = '/home/lab/works/datasets/ssd2/flickr/validation/GroundTruth'
 
+image_count = 10
 
 # 폴더 안의 이미지 수 확인을 위해 임의의 폴더의 이미지 개수 확인.
 train_folder_dirs = [join(train_dirs, x) for x in sorted(listdir(train_dirs))]
@@ -21,7 +22,7 @@ print(total_img_count)
 
 # 0 부터 이미지의 최대 개수 사이의 숫자 중 임의의 숫자 100장 뽑음.
 picked_img_from_trainset = set()
-while len(picked_img_from_trainset) < 100:
+while len(picked_img_from_trainset) < image_count:
     picked_img_from_trainset.add(randint(0, total_img_count-1))
 
 for train_folder_dir in train_folder_dirs:
@@ -30,6 +31,7 @@ for train_folder_dir in train_folder_dirs:
     img_dirs = [join(train_folder_dir, x) for x in sorted(listdir(train_folder_dir))]
 
     img_folder_dir_new = make_dirs(validation_dirs + '/' + folder_basename)
+
 
     for i in picked_img_from_trainset:
         fullname = img_dirs[i]

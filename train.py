@@ -34,30 +34,31 @@ class TrainModule(object):
         print('===> cuda_num :', self.cuda_num)
         os.environ["CUDA_VISIBLE_DEVICES"] = self.cuda_num
 
-        # training data set
-        self.train_paired_folder_dirs = {('/home/lab/works/datasets/ssd2/NTIRE_challenge_DB/sRGB/train/real_splited_non_overlaped/Noisy',
-                                     '/home/lab/works/datasets/ssd2/NTIRE_challenge_DB/sRGB/train/real_splited_non_overlaped/GroundTruth'): 2,
-                                    ('/home/lab/works/datasets/ssd2/NTIRE_challenge_DB/sRGB/train/real_splited_non_overlaped/GroundTruth',
-                                     '/home/lab/works/datasets/ssd2/NTIRE_challenge_DB/sRGB/train/real_splited_non_overlaped/GroundTruth'): 1,
-                                    }
+        # training data set (Noisy, Target 순서대로)
+        self.train_paired_folder_dirs = {
+            ('/home/lab/works/datasets/ssd2/ntire/train/splited_none_overlaped/Noisy',
+             '/home/lab/works/datasets/ssd2/ntire/train/splited_none_overlaped/GroundTruth'): 1,
+            ('/home/lab/works/datasets/ssd2/ntire/train/splited_none_overlaped/SyntheticNoisy0',
+             '/home/lab/works/datasets/ssd2/ntire/train/splited_none_overlaped/GroundTruth'): 0,
+        }
 
         # test data set
-        test_input_folder_dir = '/home/lab/works/datasets/ssd2/NTIRE_challenge_DB/sRGB/validation/Noisy'
-        test_target_folder_dir = '/home/lab/works/datasets/ssd2/NTIRE_challenge_DB/sRGB/validation/GroundTruth'
+        test_input_folder_dir = '/home/lab/works/datasets/ssd2/ntire/validation/Noisy'
+        test_target_folder_dir = '/home/lab/works/datasets/ssd2/ntire/validation/GroundTruth'
 
         # 실험 이름.
         self.exp_name = 'exp001'
         print('===> exp name :', self.exp_name)
 
         # 총 몇 epoch 돌릴것인가.
-        self.total_epoch = 20
+        self.total_epoch = 5000
 
         self.lr_decay_period = None
 
         self.init_learning_rate = 0.0001
 
         # eval 할 iteration 주기.
-        self.eval_period = 60
+        self.eval_period = 5000
 
         self.batch_size = 16
 
@@ -131,6 +132,16 @@ class TrainModule(object):
         for test_input_img_dir, test_target_img_dir in zip(self.test_input_img_dirs, self.test_target_img_dirs):
             test_input_img = self.img_loader(test_input_img_dir)
             test_target_img = self.img_loader(test_target_img_dir)
+
+            cv2.imwrite(self.test_output_folder_dir + '/'
+                        + str(os.path.basename(test_input_img_dir).split(".")[0])
+                        + '_input'
+                        + '.PNG', test_input_img)
+
+            cv2.imwrite(self.test_output_folder_dir + '/'
+                        + str(os.path.basename(test_input_img_dir).split(".")[0])
+                        + '_target'
+                        + '.PNG', test_target_img)
 
             test_output_img = self.eval.recon(test_input_img)
 
@@ -218,36 +229,32 @@ class TrainModule(object):
                 loss.backward()
                 self.optimizer.step()
 
+                self.iter_count += 1
+
                 if i % 20 == 0:
-                    print(f"===> cuda{self.cuda_num}, {self.exp_name} [epoch, iter, loss] : "
+                    print(f"===> cuda{self.cuda_num}, {self.exp_name} [epoch, iter_count, iter_best, loss] : "
                           f"{current_epoch}/{self.total_epoch}, "
-                          f"{i}/{len(self.train_data_loader)}, "
+                          f"{self.iter_count}, {self.best_iter} "
                           f"{loss.item():.6f}")
 
                 # ><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><
-
-                self.iter_count += 1
 
                 # eval
                 if self.iter_count % self.eval_period == 0:
                     print('eval validation set -------------------------------------------------------------')
 
                     psnrs_list = []
+                    test_output_imgs_list = []
                     for test_input_img_dir, test_target_img_dir in zip(self.test_input_img_dirs, self.test_target_img_dirs):
                         test_input_img = self.img_loader(test_input_img_dir)
                         test_target_img = self.img_loader(test_target_img_dir)
 
                         test_output_img = self.eval.recon(test_input_img)
 
+                        test_output_imgs_list.append((test_input_img_dir,test_output_img))
+
                         ouput_psnr = psnr(test_target_img, test_output_img)
                         psnrs_list.append(ouput_psnr)
-
-                        # write image
-                        cv2.imwrite(self.test_output_folder_dir + '/'
-                                    + str(os.path.basename(test_input_img_dir).split(".")[0])
-                                    + '_' + str(self.iter_count).zfill(10)
-                                    + '_' + str(current_epoch).zfill(3)
-                                    + '.png', test_output_img)
 
                     psnrs_list_mean = np.mean(psnrs_list)
 
@@ -255,6 +262,13 @@ class TrainModule(object):
                         self.best_psnr = psnrs_list_mean
                         self.best_iter = self.iter_count
                         self.weight_saver(current_epoch, filename=self.saved_checkpoint_dir)
+
+                        # 성능이 좋아졌을때만 sample 을 저장한다.
+                        for test_output_img in test_output_imgs_list:
+                            cv2.imwrite(self.test_output_folder_dir + '/'
+                                        + str(os.path.basename(test_output_img[0]).split(".")[0])
+                                        + '_recon'
+                                        + '.PNG', test_output_img[1])
 
                     print(f'current_psnr(iter:{self.iter_count}) : {psnrs_list_mean}\n'
                           f'besr_psnr(iter:{self.best_iter}) : {self.best_psnr}')

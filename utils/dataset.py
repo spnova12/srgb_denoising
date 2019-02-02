@@ -1,5 +1,6 @@
 from os import listdir
 from os.path import join
+import os
 import numpy as np
 import torch.utils.data as data
 import random
@@ -35,7 +36,6 @@ class PairedImageDataSet(data.Dataset):
 # ><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><
 
 def uniformed_img_dirs_by_ratio(paired_to_ratio):
-    print('# 설정한 비율 :', list(paired_to_ratio.values()))
     paired_to_paired_imgs = {}
     paired_to_len = {}
 
@@ -44,10 +44,15 @@ def uniformed_img_dirs_by_ratio(paired_to_ratio):
 
     # 폴더별 이미지들을 읽어서 (input, target) 으로 묶어준다.
     for key in paired_to_ratio.keys():
+
         input_folder_dir = key[0]
         target_folder_dir = key[1]
-        img_dirs_pair = [[join(input_folder_dir, x), join(target_folder_dir, y)]
-                         for x, y in zip(sorted(listdir(input_folder_dir)), sorted(listdir(target_folder_dir)))]
+
+        if paired_to_ratio[key] != 0:
+            img_dirs_pair = [[join(input_folder_dir, x), join(target_folder_dir, y)]
+                             for x, y in zip(sorted(listdir(input_folder_dir)), sorted(listdir(target_folder_dir)))]
+        else:
+            img_dirs_pair = []
 
         paired_to_paired_imgs[key] = img_dirs_pair
 
@@ -66,18 +71,20 @@ def uniformed_img_dirs_by_ratio(paired_to_ratio):
             random.shuffle(paired_to_paired_imgs[key])
 
             # 폴더 별 장 수를 조절해준다.
-            num_to_mul = int(paired_to_len[key] // len(paired_to_paired_imgs[key]))
-            remainder = int(paired_to_len[key] % len(paired_to_paired_imgs[key]))
-            paired_to_paired_imgs[key] = paired_to_paired_imgs[key] * num_to_mul + paired_to_paired_imgs[key][:remainder]
+            if paired_to_ratio[key] != 0:
+                num_to_mul = int(paired_to_len[key] // len(paired_to_paired_imgs[key]))
+                remainder = int(paired_to_len[key] % len(paired_to_paired_imgs[key]))
+                paired_to_paired_imgs[key] = paired_to_paired_imgs[key] * num_to_mul + paired_to_paired_imgs[key][:remainder]
 
-    print('# 비율에 맞게 조정된 실제 사이즈 :', list(paired_to_len.values()))
+    for key in paired_to_len.keys():
+        print(f"{int(paired_to_len[key])} image pairs from {key[0]}")
 
     # values 들을 하나의 list 로 묶어준다. 그리고 shuffle 한번 먹여주었다.
     img_dirs = list(paired_to_paired_imgs.values())
     img_dirs = sum(img_dirs, [])
     random.shuffle(img_dirs)
 
-    print('# 다 합쳐진 최종 데이터 셋 사이즈 :', len(img_dirs))
+    print('===> tatal image pairs :', len(img_dirs))
 
     return img_dirs
 
