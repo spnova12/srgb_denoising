@@ -30,7 +30,7 @@ class TrainModule(object):
         os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"
 
         # 사용할 gpu 번호.
-        self.cuda_num = '0'
+        self.cuda_num = '1'
         print('===> cuda_num :', self.cuda_num)
         os.environ["CUDA_VISIBLE_DEVICES"] = self.cuda_num
 
@@ -40,7 +40,7 @@ class TrainModule(object):
              '/home/lab/works/datasets/ssd2/ntire/train/splited_none_overlaped/GroundTruth'): 1,
 
             ('/home/lab/works/datasets/ssd2/ntire/train/splited_none_overlaped/SyntheticNoisy0',
-             '/home/lab/works/datasets/ssd2/ntire/train/splited_none_overlaped/GroundTruth'): 0,
+             '/home/lab/works/datasets/ssd2/ntire/train/splited_none_overlaped/GroundTruth'): 1,
 
             ('/home/lab/works/datasets/ssd2/ntire/train/splited_none_overlaped/SyntheticNoisy1',
              '/home/lab/works/datasets/ssd2/ntire/train/splited_none_overlaped/GroundTruth'): 0,
@@ -57,7 +57,7 @@ class TrainModule(object):
                            ]
 
         # 실험 이름.
-        self.exp_name = 'exp002_2'
+        self.exp_name = 'exp002_7'
         print('===> exp name :', self.exp_name)
 
         # 총 몇 epoch 돌릴것인가.

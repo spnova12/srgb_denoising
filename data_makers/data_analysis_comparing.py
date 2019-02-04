@@ -17,7 +17,7 @@ def str_to_float(element):
 # https://stickie.tistory.com/80  참고
 
 # 실험 제목
-exp_names = ('exp001', 'exp002_1')
+exp_names = ('exp001', 'exp002_2')#, 'exp002_7')
 
 # input 과 target 의 psnr 을 같이 보여줄 것인가
 print_input_psnr = False
