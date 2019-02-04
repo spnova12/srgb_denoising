@@ -1,6 +1,7 @@
 import numbers
 import numpy as np
 import torch
+import random
 
 
 class Compose(object):
@@ -118,6 +119,35 @@ class RandomCrop(object):
             return img1[top: top + new_h, left: left + new_w]
         else:
             return img1[top: top + new_h, left: left + new_w], img2[top: top + new_h, left: left + new_w]
+
+
+class RandomHorizontalFlip(object):
+    """Horizontally flip the given PIL Image randomly with a given probability.
+
+    Args:
+        p (float): probability of the image being flipped. Default value is 0.5
+
+    https://docs.scipy.org/doc/numpy-1.15.1/reference/generated/numpy.fliplr.html#numpy.fliplr
+    """
+
+    def __init__(self, p=0.5):
+        self.p = p
+
+    def __call__(self, img1, img2):
+        if random.random() < self.p:
+            # Flip array in the left/right direction.
+            return np.fliplr(img1), np.fliplr(img2)
+        return img1, img2
+
+
+class RandomRotation90(object):
+    """Rotate the image by angle 90.
+    """
+    def __call__(self, img1, img2):
+        # 0 -> 0도, 1 -> 90도, 2 -> 180도, 3 -> 270도
+        angle = random.randint(0, 3)
+
+        return np.rot90(img1, angle), np.rot90(img2, angle)
 
 
 class Color0_255to1_1(object):

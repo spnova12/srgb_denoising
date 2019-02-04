@@ -186,6 +186,8 @@ class TrainModule(object):
         self.train_set = UniformedPairedImageDataSet(self.train_paired_folder_dirs, self.img_loader,
                                                      Compose([
                                                          RandomCrop(self.random_crop_size),
+                                                         RandomHorizontalFlip(),
+                                                         RandomRotation90(),
                                                          ToTensor()
                                                      ])
                                                      )
