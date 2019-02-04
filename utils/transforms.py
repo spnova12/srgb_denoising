@@ -2,7 +2,7 @@ import numbers
 import numpy as np
 import torch
 import random
-
+import cv2
 
 class Compose(object):
     """Composes several transforms together.
@@ -136,18 +136,39 @@ class RandomHorizontalFlip(object):
     def __call__(self, img1, img2):
         if random.random() < self.p:
             # Flip array in the left/right direction.
-            return np.fliplr(img1), np.fliplr(img2)
+            return cv2.flip(img1, 0), cv2.flip(img2, 0)
         return img1, img2
 
 
 class RandomRotation90(object):
     """Rotate the image by angle 90.
     """
+    def __init__(self, img_size):
+        self.img_size = (img_size, img_size)
+        # calculate the center of the image
+        center = (img_size / 2, img_size / 2)
+
+        scale = 1.0
+
+        # Perform the counter clockwise rotation holding at the center
+        self.M_90 = cv2.getRotationMatrix2D(center, 90, scale)
+        self.M_180 = cv2.getRotationMatrix2D(center, 180, scale)
+        self.M_270 = cv2.getRotationMatrix2D(center, 270, scale)
+
+    def switch1(self, angle, img1, img2):
+        return {
+            0: (img1, img2),
+            1: (cv2.warpAffine(img1, self.M_90, self.img_size), cv2.warpAffine(img2, self.M_90, self.img_size)),
+            2: (cv2.warpAffine(img1, self.M_180, self.img_size), cv2.warpAffine(img2, self.M_180, self.img_size)),
+            3: (cv2.warpAffine(img1, self.M_270, self.img_size), cv2.warpAffine(img2, self.M_270, self.img_size))
+        }.get(angle, None)
+
     def __call__(self, img1, img2):
         # 0 -> 0도, 1 -> 90도, 2 -> 180도, 3 -> 270도
         angle = random.randint(0, 3)
+        img1, img2 = self.switch1(angle, img1, img2)
 
-        return np.rot90(img1, angle), np.rot90(img2, angle)
+        return img1, img2
 
 
 class Color0_255to1_1(object):

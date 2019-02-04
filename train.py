@@ -30,7 +30,7 @@ class TrainModule(object):
         os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"
 
         # 사용할 gpu 번호.
-        self.cuda_num = '1'
+        self.cuda_num = '0'
         print('===> cuda_num :', self.cuda_num)
         os.environ["CUDA_VISIBLE_DEVICES"] = self.cuda_num
 
@@ -40,24 +40,26 @@ class TrainModule(object):
              '/home/lab/works/datasets/ssd2/ntire/train/splited_none_overlaped/GroundTruth'): 1,
 
             ('/home/lab/works/datasets/ssd2/ntire/train/splited_none_overlaped/SyntheticNoisy0',
-             '/home/lab/works/datasets/ssd2/ntire/train/splited_none_overlaped/GroundTruth'): 1,
-
-            ('/home/lab/works/datasets/ssd2/ntire/train/splited_none_overlaped/SyntheticNoisy1',
-             '/home/lab/works/datasets/ssd2/ntire/train/splited_none_overlaped/GroundTruth'): 0,
-
-            ('/home/lab/works/datasets/ssd2/ntire/train/splited_none_overlaped/SyntheticNoisy2',
-             '/home/lab/works/datasets/ssd2/ntire/train/splited_none_overlaped/GroundTruth'): 0,
+             '/home/lab/works/datasets/ssd2/ntire/train/splited_none_overlaped/GroundTruth'): 0.8,
+            #
+            # ('/home/lab/works/datasets/ssd2/ntire/train/splited_none_overlaped/SyntheticNoisy1',
+            #  '/home/lab/works/datasets/ssd2/ntire/train/splited_none_overlaped/GroundTruth'): 0,
+            #
+            # ('/home/lab/works/datasets/ssd2/ntire/train/splited_none_overlaped/SyntheticNoisy2',
+            #  '/home/lab/works/datasets/ssd2/ntire/train/splited_none_overlaped/GroundTruth'): 0,
         }
 
         # test data set (Noisy, Target 순서대로)
-        test_folder_dir = [('/home/lab/works/datasets/ssd2/ntire/validation/Noisy',
-                           '/home/lab/works/datasets/ssd2/ntire/validation/GroundTruth'),
+        test_folder_dir = [('/home/lab/works/datasets/ssd2/ntire/validation/set1/Noisy',
+                           '/home/lab/works/datasets/ssd2/ntire/validation/set1/GroundTruth'),
                            ('/home/lab/works/datasets/ssd2/flickr/validation/GroundTruth',
-                            '/home/lab/works/datasets/ssd2/flickr/validation/GroundTruth')
+                            '/home/lab/works/datasets/ssd2/flickr/validation/GroundTruth'),
+                           ('/home/lab/works/datasets/ssd2/ntire/validation/set2/GroundTruth',
+                            '/home/lab/works/datasets/ssd2/ntire/validation/set2/GroundTruth')
                            ]
 
         # 실험 이름.
-        self.exp_name = 'exp002_7'
+        self.exp_name = 'exp002_test'
         print('===> exp name :', self.exp_name)
 
         # 총 몇 epoch 돌릴것인가.
@@ -178,21 +180,21 @@ class TrainModule(object):
         print('===> Make train data loader')
 
         # Loading training data sets
-        self.train_set = None
+        self.CatImgDirsByRatio = CatImgDirsByRatio(self.train_paired_folder_dirs)
         self.train_data_loader = None
         self.init_training_dataset_loader()
 
     def init_training_dataset_loader(self):
-        self.train_set = UniformedPairedImageDataSet(self.train_paired_folder_dirs, self.img_loader,
-                                                     Compose([
-                                                         RandomCrop(self.random_crop_size),
-                                                         RandomHorizontalFlip(),
-                                                         RandomRotation90(),
-                                                         ToTensor()
-                                                     ])
-                                                     )
+        train_set = UniformedPairedImageDataSet(self.CatImgDirsByRatio.get_dirs(), self.img_loader,
+                                                Compose([
+                                                    RandomCrop(self.random_crop_size),
+                                                    RandomHorizontalFlip(),
+                                                    RandomRotation90(self.random_crop_size),
+                                                    ToTensor()
+                                                ])
+                                                )
 
-        self.train_data_loader = DataLoader(dataset=self.train_set,
+        self.train_data_loader = DataLoader(dataset=train_set,
                                             num_workers=4,
                                             batch_size=self.batch_size,
                                             shuffle=True,
@@ -219,6 +221,7 @@ class TrainModule(object):
                 'epoch': current_epoch,
                 'iter_count': self.iter_count,
                 'best_psnr': self.best_psnr,
+
                 'state_dict': self.net.state_dict(),
                 'optimizer': self.optimizer.state_dict(),
         }
@@ -269,7 +272,7 @@ class TrainModule(object):
 
                         test_output_img = self.eval.recon(test_input_img)
 
-                        test_output_imgs_list.append((test_input_img_dir,test_output_img))
+                        test_output_imgs_list.append((test_input_img_dir, test_output_img))
 
                         ouput_psnr = psnr(test_target_img, test_output_img)
                         psnrs_list.append(ouput_psnr)
