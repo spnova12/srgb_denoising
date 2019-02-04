@@ -16,14 +16,15 @@ def str_to_float(element):
 # 두 실험의 iteration 에 따른 average 비교
 # https://stickie.tistory.com/80  참고
 
-# 실험 제목
-exp_names = ('exp001', 'exp002_2')#, 'exp002_7')
+# 실험 제목.
+exp_names = ('exp001', 'exp002_2')
 
-# input 과 target 의 psnr 을 같이 보여줄 것인가
+# input 과 target 의 psnr 을 같이 보여줄 것인가 말 것인가 선택.
 print_input_psnr = False
 
-# 비교할 열의 index
-column = 3
+# 비교할 열의 index 리스트.
+column_range = list(range(4, 104))
+column_list = column_range  # [4,5,6]
 
 # 실험에서 eval 하는 iteration 주기
 eval_period = 5000
@@ -36,18 +37,29 @@ data_lists = {}
 
 for exp_name in exp_names:
     exp_dir = os.path.dirname(os.getcwd()) + '/exp/' + exp_name
+
+    # read csv file.
     data = pandas.read_csv(exp_dir + '/' + exp_name + '_log.csv')
 
-    data_list = data.iloc[:, column].values.tolist()
+    # 원하는 열들을 추출한다.
+    d_l = []
+    for column in column_list:
+        temp = data.iloc[:, column].values.tolist()
+        d_l.append([float(data) for data in temp if str_to_float(data)])
 
-    data_list = [float(data) for data in data_list if str_to_float(data)]
+    # 추출한 열들의 평균을 구해준다.
+    d_l = np.asarray(d_l)
+    data_list = np.mean(d_l, axis=0)
+    data_list = data_list.tolist()
 
     # 실험 별 psnr 추이에서 처음 읽히는 값이 input_psnr 이다.
     input_psnr = data_list[0]
 
+    # 너무 낮은 값들은 제거해준다.
     for _ in range(10):
         data_list.remove(min(data_list))
 
+    # 잘 손질된 리스트를 사전에 넣어준다.
     data_lists[exp_name] = data_list
 
 if print_input_psnr:
@@ -61,5 +73,5 @@ for items in data_lists.items():
 
     plt.plot(tt, items[1], label=items[0])
 
-plt.legend(loc='upper left')
+plt.legend(loc='lower right')
 plt.show()
