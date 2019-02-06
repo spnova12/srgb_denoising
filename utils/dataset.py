@@ -55,6 +55,7 @@ class CatImgDirsByRatio(object):
             else:
                 img_dirs_pair = []
 
+            random.shuffle(img_dirs_pair)
             self.paired_to_paired_imgs[key] = img_dirs_pair
 
             if self.max_len < len(img_dirs_pair):
