@@ -86,19 +86,10 @@ class EvalModule(object):
         self.transform_for_eval = Compose([ToTensor()])
         self.transform_for_eval_inverse = Compose([ToImage()])
 
-    def weight_loader(self, saved_weight_dir):
-        # optionally resume from a checkpoint
-        if os.path.isfile(saved_weight_dir):
-            print("===> loading checkpoint '{}'".format(saved_weight_dir))
-
-            checkpoint = torch.load(saved_weight_dir)
-
-            current_epoch = checkpoint['epoch']
-            print("current_epoch :", current_epoch)
-
-            self.net.load_state_dict(checkpoint['state_dict_G'])
-        else:
-            print("===> no checkpoint found at '{}'".format(saved_weight_dir))
+    def set_transforms(self, transform_for_eval, transform_for_eval_inverse):
+        # input 영상의 범위가 tanh 등의 이유로 0~1 또는 -1~1 일때 사용.
+        self.transform_for_eval = transform_for_eval
+        self.transform_for_eval_inverse = transform_for_eval_inverse
 
     def recon(self, input_img):
         """

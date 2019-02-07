@@ -170,6 +170,26 @@ class Color1_1to0_255(object):
         return (img + 1.) * 127.5
 
 
+class Color0_255to0_1(object):
+    """
+    [0, 255] to [-1, 1]
+    """
+    def __call__(self, img1, img2=None):
+        if img2 is None:
+            return img1/255.
+
+        else:
+            return img1/255., img2/255 - 1.
+
+
+class Color0_1to0_255(object):
+    """
+    [-1, 1] to [0, 255]
+    """
+    def __call__(self, img):
+        return img * 255.
+
+
 class MergeNP(object):
     """
     batch 를 타일형태의 한장의 이미지로 만들어준다.
