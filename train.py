@@ -30,7 +30,7 @@ class TrainModule(object):
         os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"
 
         # 사용할 gpu 번호.
-        self.cuda_num = '1'
+        self.cuda_num = '0'
         print('===> cuda_num :', self.cuda_num)
         os.environ["CUDA_VISIBLE_DEVICES"] = self.cuda_num
 
@@ -62,7 +62,7 @@ class TrainModule(object):
                            ]
 
         # 실험 이름.
-        self.exp_name = 'exp09_1'
+        self.exp_name = 'temp'
         print('===> exp name :', self.exp_name)
 
         # 총 몇 epoch 돌릴것인가.
@@ -187,6 +187,13 @@ class TrainModule(object):
         self.train_data_loader = None
         self.init_training_dataset_loader()
 
+        # 파일 정보 저장.
+        exp_info_dir = self.log_dir + f"/{self.exp_name}_info.txt"
+        f = open(exp_info_dir, 'w')
+        for k, v in self.__dict__.items():
+            f.write(str(k) + ' >>> ' + str(v) + '\n\n')
+        f.close()
+
     def init_training_dataset_loader(self):
         train_set = UniformedPairedImageDataSet(self.CatImgDirsByRatio.get_dirs(), self.img_loader,
                                                 Compose([
@@ -305,7 +312,8 @@ class TrainModule(object):
 
 if __name__ == '__main__':
     train_module = TrainModule()
-    train_module.train()
+
+    # train_module.train()
 
 
 
