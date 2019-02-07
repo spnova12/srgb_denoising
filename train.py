@@ -312,8 +312,7 @@ class TrainModule(object):
 
 if __name__ == '__main__':
     train_module = TrainModule()
-
-    # train_module.train()
+    train_module.train()
 
 
 
