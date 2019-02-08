@@ -71,12 +71,12 @@ class TrainModule(object):
         self.eval_period = 5000
 
         # 총 몇 iteration 돌릴것인가.
-        self.total_iter = self.eval_period * 160
+        self.total_iter = self.eval_period * 100
 
         self.init_learning_rate = 0.0001
 
         # 몇 iteration 마다 learning rate decay 를 해줄것인가.
-        self.lr_decay_period = self.eval_period * 150
+        self.lr_decay_period = self.eval_period * 80
 
         # learning rate decay 할때 얼만큼 할것인가.
         self.decay_rate = 0.1
@@ -204,6 +204,7 @@ class TrainModule(object):
         f.close()
 
     def init_training_dataset_loader(self):
+        print('build dataset loader -------------------------------------------------------------')
         train_set = UniformedPairedImageDataSet(self.CatImgDirsByRatio.get_dirs(), self.img_loader,
                                                 Compose([
                                                     RandomCrop(self.random_crop_size),
@@ -248,11 +249,12 @@ class TrainModule(object):
         # Sets the learning rate to the initial learning rate decayed by 10 every n iteration
         if self.lr_decay_period:
             lr = self.init_learning_rate * (self.decay_rate ** (self.iter_count // self.lr_decay_period))
-            print('learning rate : ', lr)
+            print('===> learning rate : ', lr)
             for param_group in self.optimizer.param_groups:
                 param_group['lr'] = lr
 
     def train(self):
+        print('train start!')
         stop = False
 
         while True:
@@ -261,7 +263,7 @@ class TrainModule(object):
                 stop = True
 
             if stop:
-                print('train is finished!')
+                print('train finish!')
                 break
 
             # 학습 전에 항상 data loader 를 초기화 해준다.

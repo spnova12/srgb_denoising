@@ -92,7 +92,7 @@ class CatImgDirsByRatio(object):
         # 그리고 shuffle 한번 먹여주었다.
         random.shuffle(img_dirs)
 
-        print('===> tatal image pairs :', len(img_dirs))
+        print('tatal image pairs :', len(img_dirs))
 
         return img_dirs
 
