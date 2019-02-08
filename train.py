@@ -64,7 +64,7 @@ class TrainModule(object):
                            ]
 
         # 실험 이름.
-        self.exp_name = 'lr_test2'
+        self.exp_name = 'lr_test'
         print('===> exp name :', self.exp_name)
 
         # eval 할 iteration 주기.
@@ -220,6 +220,7 @@ class TrainModule(object):
                                             shuffle=True,
                                             drop_last=True,
                                             )
+        print('----------------------------------------------------------------------------------')
 
     def weight_loader(self):
         if os.path.isfile(self.load_checkpoint_dir):
@@ -281,7 +282,7 @@ class TrainModule(object):
 
                 self.iter_count += 1
 
-                if i % 1 == 0:
+                if i % 20 == 0:
                     print(f"===> cuda{self.cuda_num}, {self.exp_name} [iter_count, iter_best, loss] : "
                           f"{self.iter_count}[{(self.iter_count-1)//self.eval_period+1}/{self.total_iter//self.eval_period}]. "
                           f"{self.best_iter}, "
