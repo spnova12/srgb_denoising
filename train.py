@@ -9,6 +9,8 @@ import copy
 from os import listdir
 from os.path import join
 
+import tqdm
+
 from utils import *
 from utils.eval import EvalModule, LogCSV, psnr
 
@@ -62,18 +64,22 @@ class TrainModule(object):
                            ]
 
         # 실험 이름.
-        self.exp_name = ''
+        self.exp_name = 'lr_test2'
         print('===> exp name :', self.exp_name)
-
-        # 총 몇 epoch 돌릴것인가.
-        self.total_epoch = 5000
-
-        self.lr_decay_period = None
-
-        self.init_learning_rate = 0.0001
 
         # eval 할 iteration 주기.
         self.eval_period = 5000
+
+        # 총 몇 iteration 돌릴것인가.
+        self.total_iter = self.eval_period * 160
+
+        self.init_learning_rate = 0.0001
+
+        # 몇 iteration 마다 learning rate decay 를 해줄것인가.
+        self.lr_decay_period = self.eval_period * 150
+
+        # learning rate decay 할때 얼만큼 할것인가.
+        self.decay_rate = 0.1
 
         self.batch_size = 16
 
@@ -93,7 +99,6 @@ class TrainModule(object):
         # log csv 파일이 저장될 경로
         self.log_dir = make_dirs(f'exp/{self.exp_name}')
 
-        self.start_epoch = 1
         self.iter_count = 0
         self.best_psnr = 0
         self.best_iter = 0
@@ -107,42 +112,46 @@ class TrainModule(object):
         else:
             print("===> GPU on")
 
+        # 모델 생성 및 초기화.
         self.net = Generator_one2many_RDB_no_tanh(input_channel=3).to(self.device)
         self.net.apply(weights_init)
 
         print('===> Number of params: {}'.format(
             sum([p.data.nelement() for p in self.net.parameters()])))
 
-        # optimizer
-        self.optimizer = torch.optim.Adam(self.net.parameters(), lr=self.init_learning_rate, betas=(0.5, 0.999))
-
         # criterion
         self.mse = nn.MSELoss().to(self.device)
+
+        # optimizer
+        self.optimizer = torch.optim.Adam(self.net.parameters(), lr=self.init_learning_rate, betas=(0.5, 0.999))
 
         # Load pre-trained weights
         self.weight_loader()
 
+        # weight_loader 로 불러온 iter_count 를 기준으로 learning rate 을 조정해준다.
+        self.adjust_learning_rate()
+
         # Make eval module based on net
         self.eval = EvalModule(self.net)
 
+        # validation img dir 들을 하나의 list 로 묶어준다.
         self.test_input_img_dirs = []
         self.test_target_img_dirs = []
-
-        img_dir_list_for_logger = []
+        test_img_dir_list_for_logger = []
         for test_input_folder_dir, test_target_folder_dir in test_folder_dir:
-            img_dir_list_for_logger += sorted(listdir(test_input_folder_dir))
+            test_img_dir_list_for_logger += sorted(listdir(test_input_folder_dir))
             self.test_input_img_dirs += [join(test_input_folder_dir, x) for x in sorted(listdir(test_input_folder_dir))]
             self.test_target_img_dirs += [join(test_target_folder_dir, x) for x in sorted(listdir(test_target_folder_dir))]
 
+        # log 파일을 init 해준다.
         self.logger = LogCSV(log_dir=self.log_dir + f"/{self.exp_name}_log.csv")
 
         # logger 의 header 를 입력해준다.
-        self.logger.make_head(header=['epoch', 'iter_count', 'best_iter', 'average'] + img_dir_list_for_logger)
+        self.logger.make_head(header=['epoch', 'iter_count', 'best_iter', 'average'] + test_img_dir_list_for_logger)
 
         # ><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><
-
-        print('===> first eval validation set (Depending on the size of the validation set, it may take some time.)')
         # 처음 validation 을 구해본다.
+        print('===> first eval validation set (Depending on the size of the validation set, it may take some time.)')
 
         # target 과 noisy 와의 psnr 들.
         input_psnrs_list = []
@@ -150,9 +159,12 @@ class TrainModule(object):
         # 불러온 checkpoint 혹은 초기 모델로 eval 한 결과의 target 과의 psnr 들.
         output_psnrs_list = []
 
-        for test_input_img_dir, test_target_img_dir in zip(self.test_input_img_dirs, self.test_target_img_dirs):
+        print(f'reconstruct {len(self.test_input_img_dirs)} imgs')
+
+        for test_input_img_dir, test_target_img_dir in tqdm.tqdm(zip(self.test_input_img_dirs, self.test_target_img_dirs)):
             test_input_img = self.img_loader(test_input_img_dir)
             test_target_img = self.img_loader(test_target_img_dir)
+            test_output_img = self.eval.recon(test_input_img)
 
             cv2.imwrite(self.test_output_folder_dir + '/'
                         + str(os.path.basename(test_input_img_dir).split(".")[0])
@@ -163,8 +175,6 @@ class TrainModule(object):
                         + str(os.path.basename(test_input_img_dir).split(".")[0])
                         + '_target'
                         + '.PNG', test_target_img)
-
-            test_output_img = self.eval.recon(test_input_img)
 
             input_psnr = psnr(test_target_img, test_input_img)
             ouput_psnr = psnr(test_target_img, test_output_img)
@@ -185,9 +195,8 @@ class TrainModule(object):
         # Loading training data sets
         self.CatImgDirsByRatio = CatImgDirsByRatio(self.train_paired_folder_dirs)
         self.train_data_loader = None
-        self.init_training_dataset_loader()
 
-        # 파일 정보 저장.
+        # 실험 정보 저장.
         exp_info_dir = self.log_dir + f"/{self.exp_name}_info.txt"
         f = open(exp_info_dir, 'w')
         for k, v in self.__dict__.items():
@@ -217,7 +226,6 @@ class TrainModule(object):
 
             checkpoint = torch.load(self.load_checkpoint_dir)
 
-            self.start_epoch = checkpoint['epoch']
             self.iter_count = checkpoint['iter_count']
             self.best_psnr = checkpoint['best_psnr']
 
@@ -226,9 +234,8 @@ class TrainModule(object):
         else:
             print("===> no checkpoint found at '{}'".format(self.load_checkpoint_dir))
 
-    def weight_saver(self, current_epoch, filename='checkpoint.pkl'):
+    def weight_saver(self, filename='checkpoint.pkl'):
         state = {
-                'epoch': current_epoch,
                 'iter_count': self.iter_count,
                 'best_psnr': self.best_psnr,
 
@@ -237,18 +244,28 @@ class TrainModule(object):
         }
         torch.save(state, filename)
 
-    def adjust_learning_rate(self, current_epoch):
-        # Sets the learning rate to the initial learning rate decayed by 10 every n epochs
+    def adjust_learning_rate(self):
+        # Sets the learning rate to the initial learning rate decayed by 10 every n iteration
         if self.lr_decay_period:
-            lr = self.init_learning_rate * (0.1 ** (current_epoch // self.lr_decay_period))
+            lr = self.init_learning_rate * (self.decay_rate ** (self.iter_count // self.lr_decay_period))
             print('learning rate : ', lr)
             for param_group in self.optimizer.param_groups:
                 param_group['lr'] = lr
 
     def train(self):
-        for current_epoch in range(self.start_epoch, self.total_epoch + 1):
-            print(f'epoch {current_epoch} start -------------------------------------------------------------')
-            self.adjust_learning_rate(current_epoch)
+        stop = False
+
+        while True:
+
+            if self.total_iter <= self.iter_count:
+                stop = True
+
+            if stop:
+                print('train is finished!')
+                break
+
+            # 학습 전에 항상 data loader 를 초기화 해준다.
+            self.init_training_dataset_loader()
 
             for i, batch in enumerate(self.train_data_loader, 1):
                 self.net.train()
@@ -262,10 +279,10 @@ class TrainModule(object):
 
                 self.iter_count += 1
 
-                if i % 20 == 0:
-                    print(f"===> cuda{self.cuda_num}, {self.exp_name} [epoch, iter_count, iter_best, loss] : "
-                          f"{current_epoch}/{self.total_epoch}, "
-                          f"{self.iter_count}, {self.best_iter} "
+                if i % 1 == 0:
+                    print(f"===> cuda{self.cuda_num}, {self.exp_name} [iter_count, iter_best, loss] : "
+                          f"{self.iter_count}[{(self.iter_count-1)//self.eval_period+1}/{self.total_iter//self.eval_period}]. "
+                          f"{self.best_iter}, "
                           f"{loss.item():.6f}")
 
                 # ><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><
@@ -274,9 +291,15 @@ class TrainModule(object):
                 if self.iter_count % self.eval_period == 0:
                     print('eval validation set -------------------------------------------------------------')
 
+                    # eval 후 다음 학습때 사용할 learning rate 을 조정해준다. 다수의 데이터 셋의 비율을 고려해야 되기 때문.
+                    self.adjust_learning_rate()
+
+                    self.weight_saver(filename=self.saved_checkpoint_dir)
+
                     psnrs_list = []
                     test_output_imgs_list = []
-                    for test_input_img_dir, test_target_img_dir in zip(self.test_input_img_dirs, self.test_target_img_dirs):
+                    print(f'reconstruct {len(self.test_input_img_dirs)} imgs')
+                    for test_input_img_dir, test_target_img_dir in tqdm.tqdm(zip(self.test_input_img_dirs, self.test_target_img_dirs)):
                         test_input_img = self.img_loader(test_input_img_dir)
                         test_target_img = self.img_loader(test_target_img_dir)
 
@@ -292,7 +315,7 @@ class TrainModule(object):
                     if psnrs_list_mean > self.best_psnr:
                         self.best_psnr = psnrs_list_mean
                         self.best_iter = self.iter_count
-                        self.weight_saver(current_epoch, filename=self.saved_checkpoint_dir)
+                        self.weight_saver(filename=self.saved_checkpoint_dir)
 
                         # 성능이 좋아졌을때만 sample 을 저장한다.
                         for test_output_img in test_output_imgs_list:
@@ -304,10 +327,12 @@ class TrainModule(object):
                     print(f'current_psnr(iter:{self.iter_count}) : {psnrs_list_mean}\n'
                           f'besr_psnr(iter:{self.best_iter}) : {self.best_psnr}')
 
-                    self.logger([current_epoch, self.iter_count, self.best_iter, psnrs_list_mean] + psnrs_list)
+                    self.logger([self.iter_count//self.eval_period,
+                                 self.iter_count, self.best_iter, psnrs_list_mean] + psnrs_list)
 
-            # 한 epoch 이 끝나면 data loader 을 다시 생성해서 좀 더 뼛 속까지 섞어준다.
-            self.init_training_dataset_loader()
+                    if self.total_iter <= self.iter_count:
+                        stop = True
+                        break
 
 
 if __name__ == '__main__':
