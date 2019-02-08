@@ -49,7 +49,7 @@ class TrainModule(object):
              '/home/lab/works/datasets/ssd2/ntire/train/splited_none_overlaped/GroundTruth'): 0,
 
             ('/home/lab/works/datasets/ssd2/ntire/train/splited_none_overlaped/GroundTruth',
-             '/home/lab/works/datasets/ssd2/ntire/train/splited_none_overlaped/GroundTruth'): 0.1,
+             '/home/lab/works/datasets/ssd2/ntire/train/splited_none_overlaped/GroundTruth'): 0,
         }
 
         # test data set (Noisy, Target 순서대로)
@@ -62,7 +62,7 @@ class TrainModule(object):
                            ]
 
         # 실험 이름.
-        self.exp_name = 'exp011_2'
+        self.exp_name = ''
         print('===> exp name :', self.exp_name)
 
         # 총 몇 epoch 돌릴것인가.
@@ -198,8 +198,8 @@ class TrainModule(object):
         train_set = UniformedPairedImageDataSet(self.CatImgDirsByRatio.get_dirs(), self.img_loader,
                                                 Compose([
                                                     RandomCrop(self.random_crop_size),
-                                                    RandomHorizontalFlip(),
-                                                    RandomRotation90(),
+                                                    #RandomHorizontalFlip(),
+                                                    #RandomRotation90(),
                                                     ToTensor()
                                                 ])
                                                 )

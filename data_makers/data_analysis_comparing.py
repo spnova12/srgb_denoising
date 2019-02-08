@@ -17,7 +17,7 @@ def str_to_float(element):
 # https://stickie.tistory.com/80  참고
 
 # 실험 제목.
-exp_names = ('exp011_1', 'exp011_2', 'exp011_3', 'exp011_4')
+exp_names = ('exp001', 'exp012') # 'exp011_1', 'exp011_2', 'exp011_3', 'exp011_4',
 
 # input 과 target 의 psnr 을 같이 보여줄 것인가 말 것인가 선택.
 print_input_psnr = False
@@ -25,9 +25,9 @@ print_input_psnr = False
 title = 'my ntire validation + o2o'
 # 비교할 열의 index 리스트.
 #column_range = list(range(4, 134))
-#column_range = list(range(4, 104))
+column_range = list(range(4, 104))
 #column_range = list(range(104, 124))
-column_range = list(range(124, 134))
+#column_range = list(range(124, 134))
 
 column_list = column_range  # [4,5,6]
 
