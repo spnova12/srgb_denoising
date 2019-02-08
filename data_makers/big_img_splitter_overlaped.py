@@ -6,14 +6,14 @@ from utils.utils import load_BGR, make_dirs
 import cv2
 import tqdm
 
-real_origin_folder_dir = '/home/lab/works/datasets/ssd2/div2k/train/origin'
+real_origin_folder_dir = '/home/lab/works/datasets/ssd2/div2k/train/downsampled/'
 
 real_origin_basename = os.path.dirname(real_origin_folder_dir)
-real_splited_folder_dir = real_origin_basename + '/splited_overlaped/'
+real_splited_folder_dir = '/home/lab/works/datasets/ssd2/div2k/train/downsampled_splited2/'
 
 # 가로세로 열등분 하자.
-patch_h_count = 6
-patch_w_count = 6
+patch_h_count = 2
+patch_w_count = 2
 
 big_img_folder_dirs = [join(real_origin_folder_dir, x) for x in sorted(listdir(real_origin_folder_dir))]
 
