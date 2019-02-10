@@ -8,11 +8,11 @@ from random import *
 import shutil
 
 
-train_dirs =      '/home/lab/works/datasets/ssd2/flickr/train/downsampled'
+train_dirs =      '/home/lab/works/datasets/ssd2/ntire/train/splited_none_overlaped'
 
-validation_dirs = '/home/lab/works/datasets/ssd2/flickr/validation/GroundTruth'
+validation_dirs = '/home/lab/works/datasets/ssd2/ntire/validation/from_ntire_trainset'
 
-image_count = 10
+image_count = 140
 
 # 폴더 안의 이미지 수 확인을 위해 임의의 폴더의 이미지 개수 확인.
 train_folder_dirs = [join(train_dirs, x) for x in sorted(listdir(train_dirs))]
@@ -20,7 +20,7 @@ temp = [join(train_folder_dirs[0], x) for x in sorted(listdir(train_folder_dirs[
 total_img_count = len(temp)
 print(total_img_count)
 
-# 0 부터 이미지의 최대 개수 사이의 숫자 중 임의의 숫자 100장 뽑음.
+# 0 부터 이미지의 최대 개수 사이의 숫자 중 임의의 숫자 140장 뽑음.
 picked_img_from_trainset = set()
 while len(picked_img_from_trainset) < image_count:
     picked_img_from_trainset.add(randint(0, total_img_count-1))
@@ -46,9 +46,10 @@ for train_folder_dir in train_folder_dirs:
 
 
 #
+#
 # # 학습 데이터셋의 주소
-# train_gt_dir = '/home/lab/works/datasets/ssd2/NTIRE_challenge_DB/sRGB/train/real_splited_Non-overlaped/GroundTruth'
-# train_noisy_dir = '/home/lab/works/datasets/ssd2/NTIRE_challenge_DB/sRGB/train/real_splited_Non-overlaped/Noisy'
+# train_gt_dir =    '/home/lab/works/datasets/ssd2/ntire/train/splited_none_overlaped/GroundTruth'
+# train_noisy_dir = '/home/lab/works/datasets/ssd2/ntire/train/splited_none_overlaped/Noisy'
 #
 # # 새로 만들 Validation 이미지들의 저장될 주소.
 # validation_gt_dir = make_dirs('/home/lab/works/datasets/ssd2/NTIRE_challenge_DB/sRGB/validation/GroundTruth')
@@ -79,7 +80,7 @@ for train_folder_dir in train_folder_dirs:
 #     changedname = validation_noisy_dir + '/' + basename
 #     shutil.move(fullname, changedname)
 #
-#
+
 
 
 

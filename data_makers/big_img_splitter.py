@@ -12,10 +12,10 @@ from utils.utils import load_BGR, make_dirs
 import cv2
 import tqdm
 
-real_origin_folder_dir = '/home/lab/works/datasets/ssd2/NTIRE_challenge_DB/sRGB/train/real_origin'
+real_origin_folder_dir = '/home/lab/works/datasets/ssd2/ntire/train/origin_outer_clean'
 
-real_origin_basename = os.path.dirname(real_origin_folder_dir)
-real_splited_folder_dir = real_origin_basename + '/real_splited_none_overlaped/'
+real_origin_dirname = os.path.dirname(real_origin_folder_dir)
+real_splited_folder_dir = real_origin_dirname + '/real_splited_none_overlaped/'
 
 # 가로세로 열등분 하자.
 patch_h_count = 10

@@ -36,6 +36,10 @@ class TrainModule(object):
         print('===> cuda_num :', self.cuda_num)
         os.environ["CUDA_VISIBLE_DEVICES"] = self.cuda_num
 
+        # 실험 이름.
+        self.exp_name = 'exp014_1'
+        print('===> exp name :', self.exp_name)
+
         # training data set (Noisy, Target 순서대로)
         self.train_paired_folder_dirs = {
             ('/home/lab/works/datasets/ssd2/ntire/train/splited_none_overlaped/Noisy',
@@ -55,31 +59,31 @@ class TrainModule(object):
         }
 
         # test data set (Noisy, Target 순서대로)
-        test_folder_dir = [('/home/lab/works/datasets/ssd2/ntire/validation/set1/Noisy',
-                           '/home/lab/works/datasets/ssd2/ntire/validation/set1/GroundTruth'),
-                           ('/home/lab/works/datasets/ssd2/flickr/validation/GroundTruth',
-                            '/home/lab/works/datasets/ssd2/flickr/validation/GroundTruth'),
-                           ('/home/lab/works/datasets/ssd2/ntire/validation/set2/GroundTruth',
-                            '/home/lab/works/datasets/ssd2/ntire/validation/set2/GroundTruth')
+        test_folder_dir = [('/home/lab/works/datasets/ssd2/ntire/validation/from _ntire_trainset/Noisy',
+                           '/home/lab/works/datasets/ssd2/ntire/validation/from _ntire_trainset/GroundTruth'),
+
+                           ('/home/lab/works/datasets/ssd2/ntire/validation/for_o2o/GroundTruth',
+                            '/home/lab/works/datasets/ssd2/ntire/validation/for_o2o/GroundTruth'),
+
+                           # ('/home/lab/works/datasets/ssd2/flickr/validation/GroundTruth',
+                           #  '/home/lab/works/datasets/ssd2/flickr/validation/GroundTruth'),
                            ]
 
-        # 실험 이름.
-        self.exp_name = 'lr_test'
-        print('===> exp name :', self.exp_name)
+
 
         # eval 할 iteration 주기.
         self.eval_period = 5000
 
         # 총 몇 iteration 돌릴것인가.
-        self.total_iter = self.eval_period * 100
+        self.total_iter = self.eval_period * 200
 
         self.init_learning_rate = 0.0001
 
         # 몇 iteration 마다 learning rate decay 를 해줄것인가.
-        self.lr_decay_period = self.eval_period * 80
+        self.lr_decay_period = self.eval_period * 40
 
         # learning rate decay 할때 얼만큼 할것인가.
-        self.decay_rate = 0.1
+        self.decay_rate = 0.5
 
         self.batch_size = 16
 
