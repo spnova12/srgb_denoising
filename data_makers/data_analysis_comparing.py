@@ -17,7 +17,7 @@ def str_to_float(element):
 # https://stickie.tistory.com/80  참고
 
 # 실험 제목.
-exp_names = ('exp014_1', 'exp015_1', 'exp015_2', 'exp015_3', 'exp015_4') #
+exp_names = ('exp014_1', 'exp015_4', 'exp015_5', 'exp015_6', 'exp015_7') #
 
 # input 과 target 의 psnr 을 같이 보여줄 것인가 말 것인가 선택.
 print_input_psnr = False
@@ -25,7 +25,8 @@ print_input_psnr = False
 title = 'my ntire validation + o2o'
 
 # y축 범위
-ylim = [40.5, 43]
+xlim = [0, 6]
+ylim = None#[40.5, 43]
 
 # 비교할 열의 index 리스트.
 #column_range = list(range(4, 154))
@@ -86,6 +87,7 @@ for items in data_lists.items():
 
 axes = plt.gca()
 axes.set_ylim(ylim)
+axes.set_xlim(xlim)
 
 plt.legend(loc='lower right')
 plt.title(title)
