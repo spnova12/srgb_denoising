@@ -17,7 +17,7 @@ def str_to_float(element):
 # https://stickie.tistory.com/80  참고
 
 # 실험 제목.
-exp_names = ('exp001', 'exp012', 'lr_test')
+exp_names = ('exp001', 'exp014_1', 'exp015_1', 'exp015_2', 'exp015_3', 'exp015_4')
 
 # input 과 target 의 psnr 을 같이 보여줄 것인가 말 것인가 선택.
 print_input_psnr = False
@@ -61,7 +61,7 @@ for exp_name in exp_names:
     input_psnr = data_list[0]
 
     # 너무 낮은 값들은 제거해준다.
-    for _ in range(10):
+    for _ in range(0):
         data_list.remove(min(data_list))
 
     # 잘 손질된 리스트를 사전에 넣어준다.
@@ -74,7 +74,8 @@ if print_input_psnr:
 
 for items in data_lists.items():
 
-    tt = np.arange(0, len(items[1]) * eval_period, eval_period)
+    # tt = np.arange(0, len(items[1]) * eval_period, eval_period)
+    tt = np.arange(0, len(items[1])) # * eval_period, eval_period)
 
     plt.plot(tt, items[1], label=items[0])
 
