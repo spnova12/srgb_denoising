@@ -15,6 +15,7 @@ from utils import *
 from utils.eval import EvalModule, LogCSV, psnr
 
 from models.hevcNet import Generator_one2many_RDB_no_tanh
+from models.hevcNet2 import Generator_one2many_RDB_no_tanh2
 from models.subNets import weights_init
 
 import torch
@@ -37,7 +38,7 @@ class TrainModule(object):
         os.environ["CUDA_VISIBLE_DEVICES"] = self.cuda_num
 
         # 실험 이름.
-        self.exp_name = 'exp014_1'
+        self.exp_name = 'exp001_0'
         print('===> exp name :', self.exp_name)
 
         # training data set (Noisy, Target 순서대로)
@@ -117,7 +118,7 @@ class TrainModule(object):
             print("===> GPU on")
 
         # 모델 생성 및 초기화.
-        self.net = Generator_one2many_RDB_no_tanh(input_channel=3).to(self.device)
+        self.net = Generator_one2many_RDB_no_tanh2(input_channel=3).to(self.device)
         self.net.apply(weights_init)
 
         print('===> Number of params: {}'.format(

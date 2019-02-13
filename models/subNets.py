@@ -59,7 +59,7 @@ class RDB(nn.Module):
         return out
 
 
-def RDB_Blocks(channels, size):
+def RDB_Blocks(channels, size):     # 64, 16
     bundle = []
     for i in range(size):
         bundle.append(RDB(channels, nDenselayer=8, growthRate=64))  # RDB(input channels,
