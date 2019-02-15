@@ -1,10 +1,10 @@
 from models import common
 
 import torch.nn as nn
-
+from models import cbam
 
 def make_model(args, parent=False):
-    return RCAN(args)
+    return RCBAN(args)
 
 
 ## Channel Attention (CA) Layer
@@ -39,7 +39,7 @@ class RCAB(nn.Module):
             modules_body.append(conv(n_feat, n_feat, kernel_size, bias=bias))
             if bn: modules_body.append(nn.BatchNorm2d(n_feat))
             if i == 0: modules_body.append(act)
-        modules_body.append(CALayer(n_feat, reduction))
+        modules_body.append(cbam.CBAM(n_feat))
         self.body = nn.Sequential(*modules_body)
         self.res_scale = res_scale
 
@@ -69,9 +69,9 @@ class ResidualGroup(nn.Module):
 
 
 ## Residual Channel Attention Network (RCAN)
-class RCAN(nn.Module):
+class RCBAN(nn.Module):
     def __init__(self, args, conv=common.default_conv):
-        super(RCAN, self).__init__()
+        super(RCBAN, self).__init__()
 
         n_resgroups = args.n_resgroups
         n_resblocks = args.n_resblocks
