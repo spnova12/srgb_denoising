@@ -70,24 +70,24 @@ class ResidualGroup(nn.Module):
 
 ## Residual Channel Attention Network (RCAN)
 class RCAN(nn.Module):
-    def __init__(self, args, conv=common.default_conv):
-        super(RCAN, self).__init__()
+    def __init__(self, n_colors, n_resgroups=10, n_resblocks=20, n_feats=64, reduction=16, upsampler_scale=1, conv=common.default_conv):
+        super(RCAN,  self).__init__()
 
-        n_resgroups = args.n_resgroups
-        n_resblocks = args.n_resblocks
-        n_feats = args.n_feats
+        n_resgroups = n_resgroups
+        n_resblocks = n_resblocks
+        n_feats = n_feats
         kernel_size = 3
-        reduction = args.reduction
-        scale = int(args.upsampler_scale)
+        reduction = reduction
+        scale = int(upsampler_scale)
         act = nn.ReLU(True)
 
         # # RGB mean for DIV2K
         # rgb_mean = (0.4488, 0.4371, 0.4040)
         # rgb_std = (1.0, 1.0, 1.0)
-        # self.sub_mean = common.MeanShift(args.rgb_range, rgb_mean, rgb_std)
+        # self.sub_mean = common.MeanShift(rgb_range, rgb_mean, rgb_std)
 
         # define head module
-        modules_head = [conv(args.n_colors, n_feats, kernel_size)]
+        modules_head = [conv(n_colors, n_feats, kernel_size)]
 
         # define body module
         modules_body = [
@@ -100,9 +100,9 @@ class RCAN(nn.Module):
         # define tail module
         modules_tail = [
             common.Upsampler(conv, scale, n_feats, act=False),
-            conv(n_feats, args.n_colors, kernel_size)]
+            conv(n_feats, n_colors, kernel_size)]
 
-        # self.add_mean = common.MeanShift(args.rgb_range, rgb_mean, rgb_std, 1)
+        # self.add_mean = common.MeanShift(rgb_range, rgb_mean, rgb_std, 1)
 
         self.head = nn.Sequential(*modules_head)
         self.body = nn.Sequential(*modules_body)
