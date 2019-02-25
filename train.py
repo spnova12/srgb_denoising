@@ -14,7 +14,7 @@ import tqdm
 from utils import *
 from utils.eval import EvalModule, LogCSV, psnr
 
-from models.hevcNet import Generator_one2many_RDB_cbam
+from models.hevcNet import Generator_one2many_RDB_cbam_ver2
 from models.cbam import *
 from models.subNets import weights_init
 
@@ -33,12 +33,12 @@ class TrainModule(object):
         os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"
 
         # 사용할 gpu 번호.
-        self.cuda_num = '0'
+        self.cuda_num = '1'
         print('===> cuda_num :', self.cuda_num)
         os.environ["CUDA_VISIBLE_DEVICES"] = self.cuda_num
 
         # 실험 이름.
-        self.exp_name = 'exp014_hevc_cbam'
+        self.exp_name = 'exp014_hevc_cbam_ver2'
         print('===> exp name :', self.exp_name)
 
         # training data set (Noisy, Target 순서대로)
@@ -118,7 +118,7 @@ class TrainModule(object):
             print("===> GPU on")
 
         # 모델 생성 및 초기화.
-        self.net = Generator_one2many_RDB_cbam(input_channel=3).to(self.device)
+        self.net = Generator_one2many_RDB_cbam_ver2(input_channel=3).to(self.device)
         self.net.apply(weights_init_rcan)
 
         print('===> Number of params: {}'.format(
