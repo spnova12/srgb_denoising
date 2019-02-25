@@ -93,3 +93,20 @@ class CBAM(nn.Module):
         if not self.no_spatial:
             x_out = self.SpatialGate(x_out)
         return x_out
+
+def weights_init_rcan(m):
+    """
+    custom weights initialization called on netG and netD
+    https://github.com/pytorch/examples/blob/master/dcgan/main.py
+    """
+    classname = m.__class__.__name__
+    if classname.find('Conv') != -1:
+        if classname.find('BasicConv') != -1:
+            m.conv.weight.data.normal_(0.0, 0.02)
+            if m.bn != None:
+                m.bn.bias.data.fill_(0)
+        else:
+            m.weight.data.normal_(0.0, 0.02)
+    elif classname.find('BatchNorm') != -1:
+        m.weight.data.normal_(1.0, 0.02)
+        m.bias.data.fill_(0)
