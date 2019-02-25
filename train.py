@@ -15,6 +15,7 @@ from utils import *
 from utils.eval import EvalModule, LogCSV, psnr
 
 from models.hevcNet import Generator_one2many_RDB_cbam
+from models.cbam import *
 from models.subNets import weights_init
 
 import torch
@@ -118,7 +119,7 @@ class TrainModule(object):
 
         # 모델 생성 및 초기화.
         self.net = Generator_one2many_RDB_cbam(input_channel=3).to(self.device)
-        self.net.apply(weights_init)
+        self.net.apply(weights_init_rcan)
 
         print('===> Number of params: {}'.format(
             sum([p.data.nelement() for p in self.net.parameters()])))
