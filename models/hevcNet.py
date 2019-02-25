@@ -81,23 +81,32 @@ class Generator_one2many_RDB_cbam(nn.Module):
         self.cbam = CBAM(64, 16)
 
     def forward(self, x):
-        print('input x', x.shape)
         out = self.layer1(x)
-        print('layer1', out.shape)
         out = self.layer2(out)
-        print('layer2', out.shape)
         out = self.cbam(out)
         out = self.layer3(out)
-        print('layer3', out.shape)
         out = self.layer4(out)
-        print('layer4', out.shape)
 
         out = self.layer7(out)
-        print('layer7', out.shape)
         out = self.layer8(out)
-        print('layer8', out.shape)
         out = self.layer9(out)
-        print('layer9', out.shape)
 
         # global residual 구조
         return out + x
+
+    # input x
+    # torch.Size([1, 3, 298, 530])
+    # layer1
+    # torch.Size([1, 64, 298, 530])
+    # layer2
+    # torch.Size([1, 64, 298, 530])
+    # layer3
+    # torch.Size([1, 64, 149, 265])
+    # layer4
+    # torch.Size([1, 64, 149, 265])
+    # layer7
+    # torch.Size([1, 64, 298, 530])
+    # layer8
+    # torch.Size([1, 64, 298, 530])
+    # layer9
+    # torch.Size([1, 3, 298, 530])
