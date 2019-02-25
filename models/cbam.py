@@ -103,7 +103,8 @@ def weights_init_rcan(m):
     if classname.find('Conv') != -1:
         if classname.find('BasicConv') != -1:
             m.conv.weight.data.normal_(0.0, 0.02)
-            m.bn.bias.data.fill_(0)
+            if m.bn != None:
+                m.bn.bias.data.fill_(0)
         else:
             m.weight.data.normal_(0.0, 0.02)
     elif classname.find('BatchNorm') != -1:
