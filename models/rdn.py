@@ -10,7 +10,7 @@ class RDN(nn.Module):
         super(RDN, self).__init__()
 
         self.layer1 = nn.Conv2d(input_channel, 64,  kernel_size=3, stride=1, padding=1)
-        self.layer2 = nn.Conv2d(64, 64,  kernel_size=3, stride=1, padding=1)
+        self.layer2 = nn.Conv2d(64, 64,  kernel_size=4, stride=2, padding=1)
 
         # rdb 블럭들.
         self.rdb1 = RDB(nChannels=64, nDenselayer=8, growthRate=64)
@@ -32,7 +32,7 @@ class RDN(nn.Module):
 
         self.layer3 = nn.Conv2d(16*64, 64, kernel_size=1, padding=0, bias=False)
 
-        self.layer4 = nn.Conv2d(64, 64,  kernel_size=3, stride=1, padding=1)
+        self.layer4 = nn.ConvTranspose2d(64, 64, kernel_size=4, stride=2, padding=1)
         self.layer5 = nn.Conv2d(64, input_channel, kernel_size=3, stride=1, padding=1)
 
     def forward(self, x):
@@ -85,4 +85,3 @@ class RDN(nn.Module):
 
         # global residual 구조
         return out
-
