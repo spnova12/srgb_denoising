@@ -147,6 +147,12 @@ if __name__ == '__main__':
                     # print('output shape', output.shape)
 
                     outimg = revtransform(output.detach())#.cpu())
+
+                    if True:    #int형으로 변환
+                        outimg = np.around(outimg)
+                        outimg = outimg.clip(0, 255)
+                        outimg = outimg.astype(np.uint8)
+
                     # print('outimg', outimg)
                     resultNP[imgidx][patchidx] = outimg
                     # cv2.imshow('outimg', outimg)
