@@ -360,6 +360,86 @@ class Generator_one2many_RDB_cbam_ver9(nn.Module):
         # global residual 구조
         return out + x
 
+class Generator_one2many_rir(nn.Module):
+    def __init__(self, input_channel, numforrg, nomofrdb):
+        super(Generator_one2many_rir, self).__init__()
+
+        self.numforrg = numforrg          #num of rdb units in one residual group
+        self.numofrdb = nomofrdb        #num of all rdb units
+
+        self.layer1 = nn.Conv2d(input_channel, 64, kernel_size=3, stride=1, padding=1)
+        self.layer2 = nn.ReLU()
+        self.layer3 = nn.Conv2d(64, 64, kernel_size=4, stride=2, padding=1)
+
+        # self.layer4 = ResidualBlocks(64, 15)
+        self.RG = RG_Blocks(64, self.numforrg)
+
+        self.layer7 = nn.ConvTranspose2d(64, 64, kernel_size=4, stride=2, padding=1)
+        self.layer8 = nn.ReLU()
+        self.layer9 = nn.Conv2d(64, input_channel, kernel_size=3, stride=1, padding=1)
+
+        self.cbam = CBAM(64, 16)
+
+    def forward(self, x):
+        out = self.layer1(x)
+        out = self.layer2(out)
+        out = self.layer3(out)
+
+        for i in range(self.numofrdb//self.numforrg):
+            inputofrg = out
+            outofrg = self.RG(inputofrg)
+            out = inputofrg + outofrg
+
+        out = self.layer7(out)
+        out = self.layer8(out)
+        out = self.layer9(out)
+
+class Generator_one2many_gd(nn.Module):
+    def __init__(self, input_channel, numforrg, nomofrdb):
+        super(Generator_one2many_gd, self).__init__()
+
+        self.numforrg = numforrg          #num of rdb units in one residual group
+        self.numofrdb = nomofrdb  # num of all rdb units
+
+        self.layer1 = nn.Conv2d(input_channel, 64, kernel_size=3, stride=1, padding=1)
+        self.layer2 = nn.ReLU()
+        self.layer3 = nn.Conv2d(64, 64, kernel_size=4, stride=2, padding=1)
+
+        # self.layer4 = ResidualBlocks(64, 15)
+        self.rdb = RDB(64, nDenselayer=8, growthRate=64)
+
+        self.layer7 = nn.ConvTranspose2d(64, 64, kernel_size=4, stride=2, padding=1)
+        self.layer8 = nn.ReLU()
+        self.layer9 = nn.Conv2d(64, input_channel, kernel_size=3, stride=1, padding=1)
+
+        self.onebyone = nn.Conv2d(64*self.numofrdb, 64, kernel_size=3, stride=1, padding=1)
+
+    def forward(self, x):
+        out = self.layer1(x)
+        out = self.layer2(out)
+        out = self.layer3(out)
+
+        outputsofrdbs = []
+        for i in range(self.numofrdb):
+            inputofrdb = out
+            outputofrdb = self.rdb(inputofrdb)
+            out = outputofrdb
+            outputsofrdbs.append(out)
+
+        firstoutput = outputsofrdbs[0]
+        for idx in range(len(outputsofrdbs)):
+            if idx > 0:
+                out = torch.cat((firstoutput, outputsofrdbs[idx]), 1)
+
+        out = self.onebyone(out)
+
+        out = self.layer7(out)
+        out = self.layer8(out)
+        out = self.layer9(out)
+
+        # global residual 구조
+        return out + x
+
 
 
     # input x

@@ -65,6 +65,17 @@ def RDB_Blocks(channels, size):
         bundle.append(RDB(channels, nDenselayer=8, growthRate=64))  # RDB(input channels,
     return nn.Sequential(*bundle)
 
+
+####################################################################################################################
+
+
+def RG_Blocks(channels, num_for_rg):
+    bundle = []
+    for i in range(num_for_rg):
+        bundle.append(RDB(channels, nDenselayer=8, growthRate=64))
+    bundle.append(nn.Conv2d(channels, channels, kernel_size=3, stride=1, padding=1))
+    return nn.Sequential(*bundle)
+
 ####################################################################################################################
 
 
