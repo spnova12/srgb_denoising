@@ -38,7 +38,7 @@ class TrainModule(object):
         os.environ["CUDA_VISIBLE_DEVICES"] = self.cuda_num
 
         # 실험 이름.
-        self.exp_name = 'exp014_hevc_global_dense'
+        self.exp_name = 'exp014_hevc_rir_gd_mix'
         print('===> exp name :', self.exp_name)
 
         # training data set (Noisy, Target 순서대로)
