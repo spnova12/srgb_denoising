@@ -14,7 +14,7 @@ import tqdm
 from utils import *
 from utils.eval import EvalModule, LogCSV, psnr
 
-from models.hevcNet import Generator_one2many_rir_gd_mix
+from models.hevcNet import Generator_one2many_rir
 from models.cbam import *
 from models.subNets import weights_init
 
@@ -38,7 +38,7 @@ class TrainModule(object):
         os.environ["CUDA_VISIBLE_DEVICES"] = self.cuda_num
 
         # 실험 이름.
-        self.exp_name = 'exp014_hevc_rir_gd_mix'
+        self.exp_name = 'exp014_hevc_rir'
         print('===> exp name :', self.exp_name)
 
         # training data set (Noisy, Target 순서대로)
@@ -119,7 +119,7 @@ class TrainModule(object):
             print("===> GPU on")
 
         # 모델 생성 및 초기화.
-        self.net = Generator_one2many_rir_gd_mix(input_channel=3, numforrg=4, numofrdb=16).to(self.device)
+        self.net = Generator_one2many_rir(input_channel=3, numforrg=4, numofrdb=16).to(self.device)
         self.net.apply(weights_init_rcan)
 
         print('===> Number of params: {}'.format(
