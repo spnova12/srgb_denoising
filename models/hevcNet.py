@@ -361,11 +361,11 @@ class Generator_one2many_RDB_cbam_ver9(nn.Module):
         return out + x
 
 class Generator_one2many_rir(nn.Module):
-    def __init__(self, input_channel, numforrg, nomofrdb):
+    def __init__(self, input_channel, numforrg, numofrdb):
         super(Generator_one2many_rir, self).__init__()
 
         self.numforrg = numforrg          #num of rdb units in one residual group
-        self.numofrdb = nomofrdb        #num of all rdb units
+        self.numofrdb = numofrdb        #num of all rdb units
 
         self.layer1 = nn.Conv2d(input_channel, 64, kernel_size=3, stride=1, padding=1)
         self.layer2 = nn.ReLU()
@@ -394,12 +394,14 @@ class Generator_one2many_rir(nn.Module):
         out = self.layer8(out)
         out = self.layer9(out)
 
+        return out + x
+
 class Generator_one2many_gd(nn.Module):
-    def __init__(self, input_channel, numforrg, nomofrdb):
+    def __init__(self, input_channel, numforrg, numofrdb):
         super(Generator_one2many_gd, self).__init__()
 
         self.numforrg = numforrg          #num of rdb units in one residual group
-        self.numofrdb = nomofrdb  # num of all rdb units
+        self.numofrdb = numofrdb  # num of all rdb units
 
         self.layer1 = nn.Conv2d(input_channel, 64, kernel_size=3, stride=1, padding=1)
         self.layer2 = nn.ReLU()

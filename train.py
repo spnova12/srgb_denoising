@@ -14,7 +14,7 @@ import tqdm
 from utils import *
 from utils.eval import EvalModule, LogCSV, psnr
 
-from models.hevcNet import Generator_one2many_RDB_cbam_ver6
+from models.hevcNet import Generator_one2many_rir
 from models.cbam import *
 from models.subNets import weights_init
 
@@ -38,7 +38,7 @@ class TrainModule(object):
         os.environ["CUDA_VISIBLE_DEVICES"] = self.cuda_num
 
         # 실험 이름.
-        self.exp_name = 'exp014_hevc_cbam_ver6'
+        self.exp_name = 'exp014_hevc_residual_in_residual'
         print('===> exp name :', self.exp_name)
 
         # training data set (Noisy, Target 순서대로)
@@ -100,6 +100,7 @@ class TrainModule(object):
         # checkpoint 저장할 경로.
         self.load_checkpoint_dir = make_dirs(f'exp/{self.exp_name}') + '/' + 'checkpoint.pkl'
         self.saved_checkpoint_dir = make_dirs(f'exp/{self.exp_name}') + '/' + 'checkpoint.pkl'
+        self.saved_best_dir = f'exp/{self.exp_name}/best.pkl'
 
         # log csv 파일이 저장될 경로
         self.log_dir = make_dirs(f'exp/{self.exp_name}')
@@ -118,7 +119,7 @@ class TrainModule(object):
             print("===> GPU on")
 
         # 모델 생성 및 초기화.
-        self.net = Generator_one2many_RDB_cbam_ver6(input_channel=3).to(self.device)
+        self.net = Generator_one2many_rir(input_channel=3, numforrg=4, numofrdb=16).to(self.device)
         self.net.apply(weights_init_rcan)
 
         print('===> Number of params: {}'.format(
@@ -323,7 +324,7 @@ class TrainModule(object):
                     if psnrs_list_mean > self.best_psnr:
                         self.best_psnr = psnrs_list_mean
                         self.best_iter = self.iter_count
-                        self.weight_saver(filename=self.saved_checkpoint_dir)
+                        self.weight_saver(filename=self.saved_best_dir)
 
                         # 성능이 좋아졌을때만 sample 을 저장한다.
                         for test_output_img in test_output_imgs_list:
