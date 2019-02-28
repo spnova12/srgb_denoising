@@ -432,6 +432,7 @@ class Generator_one2many_gd(nn.Module):
         for idx in range(len(outputsofrdbs)):
             if idx > 0:
                 out = torch.cat((firstoutput, outputsofrdbs[idx]), 1)
+                firstoutput = out
 
         out = self.onebyone(out)
 
