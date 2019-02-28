@@ -463,7 +463,7 @@ class Generator_one2many_rir_gd_mix(nn.Module):
         self.layer8 = nn.ReLU()
         self.layer9 = nn.Conv2d(64, input_channel, kernel_size=3, stride=1, padding=1)
 
-        self.onebyone = nn.Conv2d(64 * self.numofrdb, 64, kernel_size=3, stride=1, padding=1)
+        self.onebyone = nn.Conv2d(64 * self.numofrdb // self.numforrg, 64, kernel_size=3, stride=1, padding=1)
 
     def forward(self, x):
         out = self.layer1(x)
