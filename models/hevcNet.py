@@ -861,8 +861,8 @@ class Generator_one2many_gd_rir_cbam3_non_recursive_relu(nn.Module):
         self.layer7 = nn.ConvTranspose2d(64, 64, kernel_size=4, stride=2, padding=1)
         self.layer8 = nn.ReLU()
         self.layer9 = nn.Conv2d(64, input_channel, kernel_size=3, stride=1, padding=1)
-        self.cbam1 = CBAM(64, 16)
-        self.cbam2 = CBAM(64, 16)
+        self.cbam1 = CBAM(64, 16, no_spatial=True)
+        self.cbam2 = CBAM(64, 16, no_spatial=True)
 
     def forward(self, x):
         out = self.layer1(x)
