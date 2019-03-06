@@ -499,9 +499,9 @@ class Generator_one2many_rir_gd_mix(nn.Module):     #rir gd
         # global residual 구조
         return out + x
 
-class Generator_one2many_rir_gd_mix2(nn.Module):    #gd rir
+class Generator_one2many_gd_rir(nn.Module):    #gd rir
     def __init__(self, input_channel, numforrg, numofrdb):
-        super(Generator_one2many_rir_gd_mix2, self).__init__()
+        super(Generator_one2many_gd_rir, self).__init__()
 
         self.numforrg = numforrg  # num of rdb units in one residual group
         self.numofrdb = numofrdb  # num of all rdb units
@@ -573,6 +573,95 @@ class Generator_one2many_rir_gd_mix2(nn.Module):    #gd rir
         out20 = out15 + self.oneone4(concated)
 
         out = self.layer7(out20)
+        out = self.layer8(out)
+        out = self.layer9(out)
+
+        # global residual 구조
+        return out + x
+
+class Generator_one2many_gd_rir_recursive(nn.Module):  # gd rir recursive
+    def __init__(self, input_channel, numforrg, numofrdb, timevalue=3):
+        super(Generator_one2many_gd_rir_recursive, self).__init__()
+
+        self.numforrg = numforrg  # num of rdb units in one residual group
+        self.numofrdb = numofrdb  # num of all rdb units
+        self.timevalue = timevalue # num of repeat
+
+        self.layer1 = nn.Conv2d(input_channel, 64, kernel_size=3, stride=1, padding=1)
+        self.layer2 = nn.ReLU()
+        self.layer3 = nn.Conv2d(64, 64, kernel_size=4, stride=2, padding=1)
+
+        self.rdb1 = RDB(64, nDenselayer=8, growthRate=64)
+        self.rdb2 = RDB(64, nDenselayer=8, growthRate=64)
+        self.rdb3 = RDB(64, nDenselayer=8, growthRate=64)
+        self.rdb4 = RDB(64, nDenselayer=8, growthRate=64)
+        self.oneone1 = nn.Conv2d(64 * self.numforrg, 64, kernel_size=1, stride=1, padding=0)
+
+        self.rdb5 = RDB(64, nDenselayer=8, growthRate=64)
+        self.rdb6 = RDB(64, nDenselayer=8, growthRate=64)
+        self.rdb7 = RDB(64, nDenselayer=8, growthRate=64)
+        self.rdb8 = RDB(64, nDenselayer=8, growthRate=64)
+        self.oneone2 = nn.Conv2d(64 * self.numforrg, 64, kernel_size=1, stride=1, padding=0)
+
+        self.rdb9 = RDB(64, nDenselayer=8, growthRate=64)
+        self.rdb10 = RDB(64, nDenselayer=8, growthRate=64)
+        self.rdb11 = RDB(64, nDenselayer=8, growthRate=64)
+        self.rdb12 = RDB(64, nDenselayer=8, growthRate=64)
+        self.oneone3 = nn.Conv2d(64 * self.numforrg, 64, kernel_size=1, stride=1, padding=0)
+
+        self.rdb13 = RDB(64, nDenselayer=8, growthRate=64)
+        self.rdb14 = RDB(64, nDenselayer=8, growthRate=64)
+        self.rdb15 = RDB(64, nDenselayer=8, growthRate=64)
+        self.rdb16 = RDB(64, nDenselayer=8, growthRate=64)
+        self.oneone4 = nn.Conv2d(64 * self.numforrg, 64, kernel_size=1, stride=1, padding=0)
+
+        self.layer7 = nn.ConvTranspose2d(64, 64, kernel_size=4, stride=2, padding=1)
+        self.layer8 = nn.ReLU()
+        self.layer9 = nn.Conv2d(64, input_channel, kernel_size=3, stride=1, padding=1)
+
+    def forward(self, x):
+        out = self.layer1(x)
+        out = self.layer2(out)
+        out = self.layer3(out)
+
+        for i in range(self.timevalue):
+            input = out
+            out1 = self.rdb1(input)
+            out2 = self.rdb2(out1)
+            out3 = self.rdb3(out2)
+            out4 = self.rdb4(out3)
+            concated = torch.cat((out1, out2, out3, out4), 1)
+            out = input + self.oneone1(concated)
+
+        for i in range(self.timevalue):
+            input = out
+            out6 = self.rdb5(input)
+            out7 = self.rdb6(out6)
+            out8 = self.rdb7(out7)
+            out9 = self.rdb8(out8)
+            concated = torch.cat((out6, out7, out8, out9), 1)
+            out = input + self.oneone2(concated)
+
+
+        for i in range(self.timevalue):
+            input = out
+            out11 = self.rdb9(input)
+            out12 = self.rdb10(out11)
+            out13 = self.rdb11(out12)
+            out14 = self.rdb12(out13)
+            concated = torch.cat((out11, out12, out13, out14), 1)
+            out = input + self.oneone3(concated)
+
+        for i in range(self.timevalue):
+            input = out
+            out16 = self.rdb13(input)
+            out17 = self.rdb14(out16)
+            out18 = self.rdb15(out17)
+            out19 = self.rdb16(out18)
+            concated = torch.cat((out16, out17, out18, out19), 1)
+            out = input + self.oneone4(concated)
+
+        out = self.layer7(out)
         out = self.layer8(out)
         out = self.layer9(out)
 
