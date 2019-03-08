@@ -87,9 +87,14 @@ class GRDB(nn.Module):
         self.conv_1x1 = nn.Conv2d(numofkernels * numforrg, numofkernels, kernel_size=1, stride=1, padding=0)
 
     def forward(self, x):
-        out = self.rdbs(x)
-        # out = self.conv_1x1(out)
-        out = out + x
+        out = x
+        outputlist = []
+        for rdb in self.rdbs:
+            output = rdb(out)
+            outputlist.append(output)
+            out = output
+        concat = torch.cat(outputlist, 1)
+        out = x + self.conv_1x1(concat)
         return out
 
 
