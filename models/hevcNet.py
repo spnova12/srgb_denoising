@@ -500,7 +500,7 @@ class Generator_one2many_rir_gd_mix(nn.Module):     #rir gd
         return out + x
 
 class Generator_one2many_gd_rir(nn.Module):    #gd rir
-    def __init__(self, input_channel, numforrg, numofrdb):
+    def __init__(self, input_channel, numforrg=4, numofrdb=16):
         super(Generator_one2many_gd_rir, self).__init__()
 
         self.numforrg = numforrg  # num of rdb units in one residual group
