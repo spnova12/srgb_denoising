@@ -58,7 +58,6 @@ class RDB(nn.Module):
         out = out + x
         return out
 
-
 def RDB_Blocks(channels, size):
     bundle = []
     for i in range(size):
@@ -67,7 +66,32 @@ def RDB_Blocks(channels, size):
 
 
 ####################################################################################################################
+class RG(nn.Module):
+    """
+    Residual group define
+    """
+    def __init__(self, numforrg=4, numofconv=8, numoffilters=64):
+        self.rdblist = []
+        self.rdbresultslist = []
+        self.numforrg = numforrg
+        # self.numofrdb = numofrdb
+        self.numofconv = numofconv
+        self.numoffilters = numoffilters
 
+        for i in range(self.numforrg):
+            self.rdblist.append(RDB(self.numoffilters, nDenselayer=self.numoffilters, growthRate=self.numoffilters))
+        self.oneone = nn.Conv2d(self.numoffilters * self.numforrg, self.numoffilters, kernel_size=1, stride=1, padding=0)
+        # rdblist.append(self.oneone)
+
+    def forward(self, x):
+        out = x
+        for rdb in self.rdblist:
+            out = rdb(out)
+            self.rdbresultslist.append(out)
+        concattensor = torch.cat(self.rdbresultslist, 1)
+        out = x + self.oneone(concattensor)
+
+        return out
 
 def RG_Blocks(channels, num_for_rg):
     bundle = []

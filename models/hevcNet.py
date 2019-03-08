@@ -747,6 +747,80 @@ class Generator_one2many_gd_rir_no_relu(nn.Module):
         # global residual 구조
         return out + x
 
+class Generator_one2many_gd_rir_new(nn.Module):
+    def __init__(self, input_channel, numforrg=4, numofrdb=16, numofconv=8, numoffilters=64):
+        super(Generator_one2many_gd_rir_new, self).__init__()
+
+        self.numforrg = numforrg  # num of rdb units in one residual group
+        self.numofrdb = numofrdb  # num of all rdb units
+        self.numofconv = numofconv  # num of convlayers in one rdb
+        self.numoffilters = numoffilters    # num of filters
+
+        self.layer1 = nn.Conv2d(input_channel, self.numoffilters, kernel_size=3, stride=1, padding=1)
+        self.layer2 = nn.ReLU()
+        self.layer3 = nn.Conv2d(self.numoffilters, self.numoffilters, kernel_size=4, stride=2, padding=1)
+
+        rglist = []
+        for i in range(self.numofrdb // self.numforrg):
+            rglist.append(RG(self.numforrg, self.numofconv, self.numoffilters))
+
+        self.rglayers = nn.Sequential(*rglist)
+
+        self.layer7 = nn.ConvTranspose2d(self.numoffilters, self.numoffilters, kernel_size=4, stride=2, padding=1)
+        self.layer8 = nn.ReLU()
+        self.layer9 = nn.Conv2d(self.numoffilters, input_channel, kernel_size=3, stride=1, padding=1)
+
+    def forward(self, x):
+        out = self.layer1(x)
+        out = self.layer2(out)
+        out = self.layer3(out)
+
+        out = self.rglayers(out)
+
+        out = self.layer7(out)
+        out = self.layer8(out)
+        out = self.layer9(out)
+
+        # global residual 구조
+        return out + x
+
+class Generator_one2many_gd_rir_no_relu_new(nn.Module):
+    def __init__(self, input_channel, numforrg=4, numofrdb=16, numofconv=8, numoffilters=64):
+        super(Generator_one2many_gd_rir_no_relu_new, self).__init__()
+
+        self.numforrg = numforrg  # num of rdb units in one residual group
+        self.numofrdb = numofrdb  # num of all rdb units
+        self.numofconv = numofconv  # num of convlayers in one rdb
+        self.numoffilters = numoffilters    # num of filters
+
+        self.layer1 = nn.Conv2d(input_channel, self.numoffilters, kernel_size=3, stride=1, padding=1)
+        # self.layer2 = nn.ReLU()
+        self.layer3 = nn.Conv2d(self.numoffilters, self.numoffilters, kernel_size=4, stride=2, padding=1)
+
+        rglist = []
+        for i in range(self.numofrdb // self.numforrg):
+            rglist.append(RG(self.numforrg, self.numofconv, self.numoffilters))
+
+        self.rglayers = nn.Sequential(*rglist)
+
+        self.layer7 = nn.ConvTranspose2d(self.numoffilters, self.numoffilters, kernel_size=4, stride=2, padding=1)
+        # self.layer8 = nn.ReLU()
+        self.layer9 = nn.Conv2d(self.numoffilters, input_channel, kernel_size=3, stride=1, padding=1)
+
+    def forward(self, x):
+        out = self.layer1(x)
+        # out = self.layer2(out)
+        out = self.layer3(out)
+
+        out = self.rglayers(out)
+
+        out = self.layer7(out)
+        # out = self.layer8(out)
+        out = self.layer9(out)
+
+        # global residual 구조
+        return out + x
+
 class Generator_one2many_gd_rir_cbam3_recursive_relu(nn.Module):
     def __init__(self, input_channel, numforrg, numofrdb):
         super(Generator_one2many_gd_rir_cbam3_recursive_relu, self).__init__()
