@@ -119,7 +119,7 @@ class TrainModule(object):
             print("===> GPU on")
 
         # 모델 생성 및 초기화.
-        self.net = Generator_one2many_gd_rir_new(input_channel=3, numforrg=4, numofrdb=16).to(self.device)
+        self.net = Generator_one2many_gd_rir_new(input_channel=3).to(self.device)
         self.net.apply(weights_init_rcan)
 
         print('===> Number of params: {}'.format(
