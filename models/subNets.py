@@ -66,7 +66,31 @@ def RDB_Blocks(channels, size):
 
 
 ####################################################################################################################
+# Group of Residual dense block (GRDB) architecture
+class GRDB(nn.Module):
+    """
+    https://github.com/lizhengwei1992/ResidualDenseNetwork-Pytorch
+    """
 
+    def __init__(self, numofkernels, nDenselayer, growthRate, numforrg):
+        """
+        :param nChannels: input feature 의 channel 수
+        :param nDenselayer: RDB(residual dense block) 에서 Conv 의 개수
+        :param growthRate: Conv 의 output layer 의 수
+        """
+        super(GRDB, self).__init__()
+
+        modules = []
+        for i in range(numforrg):
+            modules.append(RDB(numofkernels, nDenselayer=nDenselayer, growthRate=growthRate))
+        self.rdbs = nn.Sequential(*modules)
+        self.conv_1x1 = nn.Conv2d(numofkernels * numforrg, numofkernels, kernel_size=1, stride=1, padding=0)
+
+    def forward(self, x):
+        out = self.rdbs(x)
+        # out = self.conv_1x1(out)
+        out = out + x
+        return out
 
 
 ####################################################################################################################
