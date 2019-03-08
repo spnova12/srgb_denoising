@@ -80,8 +80,8 @@ class RG(nn.Module):
         self.numoffilters = numoffilters
 
         for i in range(self.numforrg):
-            rdblist.append(RDB(self.numoffilters, nDenselayer=self.numoffilters, growthRate=self.numoffilters))
-        self.oneone = nn.Conv2d(self.numoffilters * self.numforrg, self.numoffilters, kernel_size=1, stride=1, padding=0)
+            rdblist.append(RDB(self.numoffilters, nDenselayer=self.numofconv, growthRate=self.numoffilters))
+        self.oneone = nn.Conv2d(self.numforrg * self.numoffilters, self.numoffilters, kernel_size=1, stride=1, padding=0)
         self.rdblist = rdblist
         # rdblist.append(self.oneone)
 
