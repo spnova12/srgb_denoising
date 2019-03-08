@@ -71,7 +71,8 @@ class RG(nn.Module):
     Residual group define
     """
     def __init__(self, numforrg=4, numofconv=8, numoffilters=64):
-        self.rdblist = []
+        super(RG, self).__init__()
+        rdblist = []
         self.rdbresultslist = []
         self.numforrg = numforrg
         # self.numofrdb = numofrdb
@@ -79,8 +80,9 @@ class RG(nn.Module):
         self.numoffilters = numoffilters
 
         for i in range(self.numforrg):
-            self.rdblist.append(RDB(self.numoffilters, nDenselayer=self.numoffilters, growthRate=self.numoffilters))
+            rdblist.append(RDB(self.numoffilters, nDenselayer=self.numoffilters, growthRate=self.numoffilters))
         self.oneone = nn.Conv2d(self.numoffilters * self.numforrg, self.numoffilters, kernel_size=1, stride=1, padding=0)
+        self.rdblist = rdblist
         # rdblist.append(self.oneone)
 
     def forward(self, x):
