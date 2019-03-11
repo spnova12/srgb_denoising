@@ -29,6 +29,17 @@ class make_dense(nn.Module):
         out = torch.cat((x, out), 1)
         return out
 
+class make_dense_LReLU(nn.Module):
+    def __init__(self, nChannels, growthRate, kernel_size=3):
+        super(make_dense_LReLU, self).__init__()
+        self.conv = nn.Conv2d(nChannels, growthRate, kernel_size=kernel_size, padding=(kernel_size - 1) // 2,
+                              bias=False)
+
+    def forward(self, x):
+        out = F.leaky_relu(self.conv(x))
+        out = torch.cat((x, out), 1)
+        return out
+
 
 # Residual dense block (RDB) architecture
 class RDB(nn.Module):
@@ -46,7 +57,7 @@ class RDB(nn.Module):
         nChannels_ = nChannels
         modules = []
         for i in range(nDenselayer):
-            modules.append(make_dense(nChannels_, growthRate))
+            modules.append(make_dense_LReLU(nChannels_, growthRate))
             nChannels_ += growthRate
         self.dense_layers = nn.Sequential(*modules)
         self.conv_1x1 = nn.Conv2d(nChannels_, nChannels, kernel_size=1, padding=0, bias=False)
