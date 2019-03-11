@@ -372,8 +372,8 @@ class Generator_one2many_rir(nn.Module):
         self.layer3 = nn.Conv2d(64, 64, kernel_size=4, stride=2, padding=1)
 
         RGlist = []
-        for i in range(self.numofrdb // self.numforrg):
-            RGlist.append(RG_Blocks(64, self.numforrg))
+        # for i in range(self.numofrdb // self.numforrg):
+        #     RGlist.append(RG_Blocks(64, self.numforrg))
 
         self.RGlist = nn.Sequential(*RGlist)
 
@@ -383,6 +383,7 @@ class Generator_one2many_rir(nn.Module):
 
 
     def forward(self, x):
+        print('****************this model is disused!!!!!!!!!******************"')
         out = self.layer1(x)
         out = self.layer2(out)
         out = self.layer3(out)
@@ -460,8 +461,8 @@ class Generator_one2many_rir_gd_mix(nn.Module):     #rir gd
         self.layer3 = nn.Conv2d(64, 64, kernel_size=4, stride=2, padding=1)
 
         RGlist = []
-        for i in range(self.numofrdb // self.numforrg):
-            RGlist.append(RG_Blocks(64, self.numforrg))
+        # for i in range(self.numofrdb // self.numforrg):
+        #     RGlist.append(RG_Blocks(64, self.numforrg))
 
         self.RGlist = nn.Sequential(*RGlist)
 
@@ -473,6 +474,7 @@ class Generator_one2many_rir_gd_mix(nn.Module):     #rir gd
         self.onebyone = nn.Conv2d(64 * self.numofrdb // self.numforrg, 64, kernel_size=1, stride=1, padding=0)
 
     def forward(self, x):
+        print('****************this model is disused!!!!!!!!!******************"')
         out = self.layer1(x)
         out = self.layer2(out)
         out = self.layer3(out)
