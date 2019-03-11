@@ -38,7 +38,7 @@ class TrainModule(object):
         os.environ["CUDA_VISIBLE_DEVICES"] = self.cuda_num
 
         # 실험 이름.
-        self.exp_name = 'exp014_hevc_gd_rir_new_code_new_param_44'
+        self.exp_name = 'exp014_hevc_gd_rir_new_code_new_param_30_128_every4'
         print('===> exp name :', self.exp_name)
 
         # training data set (Noisy, Target 순서대로)
@@ -119,7 +119,7 @@ class TrainModule(object):
             print("===> GPU on")
 
         # 모델 생성 및 초기화.
-        self.net = Generator_one2many_gd_rir_new(input_channel=3, numforrg=4, numofrdb=44, numofconv=8, numoffilters=64).to(self.device)
+        self.net = Generator_one2many_gd_rir_new(input_channel=3, numforrg=4, numofrdb=30, numofconv=8, numoffilters=128).to(self.device)
         self.net.apply(weights_init_rcan)
 
         print('===> Number of params: {}'.format(
